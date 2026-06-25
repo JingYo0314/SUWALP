@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>雲端儀器校正維修病歷系統</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7f6;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+            margin-top: 0;
+        }
+        h2 {
+            color: #2c3e50;
+            font-size: 18px;
+            margin-top: 20px;
+            border-left: 4px solid #3498db;
+            padding-left: 10px;
+        }
+        .form-section {
+            background-color: #f9fbfd;
+            border: 1px solid #e2e8f0;
+            padding: 20px;
+            border-radius: 6px;
+            margin-bottom: 30px;
+        }
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        .form-group { display: flex; flex-direction: column; }
+        .form-group label { margin-bottom: 5px; font-weight: bold; font-size: 14px; color: #4a5568; }
+        .form-group input, .form-group select { padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 14px; outline: none; }
+        .form-group input:focus, .form-group select:focus { border-color: #3498db; }
+        
+        .search-section {
+            display: flex; align-items: center; margin: 20px 0; gap: 10px;
+            background-color: #edf2f7; padding: 15px; border-radius: 6px;
+        }
+        .search-input { flex: 1; padding: 10px 15px; font-size: 15px; border: 1px solid #cbd5e1; border-radius: 4px; outline: none; }
+        
+        .btn { padding: 10px 20px; font-size: 14px; border: none; border-radius: 4px; cursor: pointer; transition: background-color 0.2s; font-weight: bold; }
+        .btn-primary { background-color: #3498db; color: white; }
+        .btn-primary:hover { background-color: #2980b9; }
+        .btn-success { background-color: #2ecc71; color: white; width: 100%; padding: 12px; font-size: 16px; }
+        .btn-success:hover { background-color: #27ae60; }
+        .btn-secondary { background-color: #95a5a6; color: white; }
+        .btn-secondary:hover { background-color: #7f8c8d; }
+        .btn-danger { background-color: #e74c3c; color: white; padding: 5px 10px; font-size: 12px; }
+        .btn-danger:hover { background-color: #c0392b; }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #e2e8f0; font-size: 14px; }
+        th { background-color: #2c3e50; color: white; }
+        tr:hover { background-color: #f8fafc; }
+        
+        .sortable { cursor: pointer; user-select: none; transition: background-color 0.2s; }
+        .sortable:hover { background-color: #34495e; }
+        .sort-icon { font-size: 12px; margin-left: 5px; opacity: 0.5; }
+        .sort-active { opacity: 1; color: #f1c40f; }
+
+        .no-data { text-align: center; padding: 30px; color: #94a3b8; font-size: 16px; }
+        .status-badge { padding: 4px 8px; border-radius: 12px; font-size: 12px; font-weight: bold; }
+        .status-done { background-color: #def7ec; color: #03543f; }
+        .status-wait { background-color: #fef3c7; color: #92400e; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🌐 雲端儀器校正維修管理系統</h1>
+    
+    <div class="form-section">
+        <h2>➕ 新增維修/校正紀錄</h2>
+        <form id="recordForm" onsubmit="addRecord(event)">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="inputDate">日期</label>
+                    <input type="date" id="inputDate" required>
+                </div>
+                <div class="form-group">
+                    <label for="inputTime">時間</label>
+                    <input type="time" id="inputTime" required>
+                </div>
+                <div class="form-group">
+                    <label for="inputCustomer">客戶名稱</label>
+                    <input type="text" id="inputCustomer" placeholder="例如：台積電" required>
+                </div>
+                <div class="form-group">
+                    <label for="inputSerial">儀器序號</label>
+                    <input type="text" id="inputSerial" placeholder="例如：SN-A1001" required>
+                </div>
+            </div>
+            <div class="form-grid">
+                <div class="form-group" style="grid-column: span 2;">
+                    <label for="inputTask">維修/校正項目詳細說明</label>
+                    <input type="text" id="inputTask" placeholder="請輸入處理內容..." required>
+                </div>
+                <div class="form-group">
+                    <label for="inputEngineer">處理工程師</label>
+                    <input type="text" id="inputEngineer" placeholder="工程師姓名" required>
+                </div>
+                <div class="form-group">
+                    <label for="inputStatus">案件狀態</label>
+                    <select id="inputStatus">
+                        <option value="✅ 完成">✅ 完成</option>
+                        <option value="⏳ 待零件">⏳ 待零件</option>
+                        <option value="⚠️ 檢修中">⚠️ 檢修中</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-grid" style="grid-template-columns: 1fr;">
+                <div class="form-group">
+                    <label for="inputRemarks">備註</label>
+                    <input type="text" id="inputRemarks" placeholder="選填備註事項...">
+                </div>
+            </div>
+            <button type="submit" class="btn btn-success">儲存並同步至雲端</button>
+        </form>
+    </div>
+
+    <h2>🔍 歷史紀錄查詢與管理</h2>
+    <div class="search-section">
+        <input type="text" id="searchInput" class="search-input" placeholder="輸入「客戶名稱」或「儀器序號」進行搜尋..." oninput="searchRecords()">
+        <button class="btn btn-primary" onclick="searchRecords()">搜尋</button>
+        <button class="btn btn-secondary" onclick="resetSearch()">清除搜尋 / 顯示全部</button>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th class="sortable" onclick="handleSort('datetime')">日期與時間 <span id="sort-datetime" class="sort-icon sort-active">⬇️</span></th>
+                <th class="sortable" onclick="handleSort('customer')">客戶名稱 <span id="sort-customer" class="sort-icon">↕️</span></th>
+                <th class="sortable" onclick="handleSort('serial')">儀器序號 <span id="sort-serial" class="sort-icon">↕️</span></th>
+                <th>維修/校正項目</th>
+                <th>處理工程師</th>
+                <th>狀態</th>
+                <th>備註</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody id="recordTableBody">
+            <tr><td colspan="8" class="no-data">☁️ 雲端資料庫連線中...</td></tr>
+        </tbody>
+    </table>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getFirestore, collection, addDoc, deleteDoc, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+    // 🔴 ⚠️ 請將下方的金鑰內容替換為你在 Firebase 複製的 Config 內容 ⚠️ 🔴
+    const firebaseConfig = {
+        apiKey: "AIzaSyBccKaB3yjh7anO2KhK2XsPiwnoEDYAss8",
+  authDomain: "tva2020.firebaseapp.com",
+  databaseURL: "https://tva2020-default-rtdb.firebaseio.com",
+  projectId: "tva2020",
+  storageBucket: "tva2020.firebasestorage.app",
+  messagingSenderId: "309634484442",
+  appId: "1:309634484442:web:d31941cfef811f73a63de3",
+  measurementId: "G-ZSCF0Y3N5Z"
+
+    };
+
+    // 初始化 Firebase 與 Firestore
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const recordsCol = collection(db, "instrument_records"); // 資料庫集合名稱
+
+    let database = []; // 用於存放從雲端即時抓下來的總資料
+    const tableBody = document.getElementById("recordTableBody");
+    const searchInput = document.getElementById("searchInput");
+
+    let currentSortColumn = 'datetime';
+    let isDescending = true;
+
+    // 監聽雲端資料庫（實時同步核心：只要資料庫一變動，這裡就會自動執行）
+    onSnapshot(recordsCol, (snapshot) => {
+        database = [];
+        snapshot.forEach((doc) => {
+            database.push({ id: doc.id, ...doc.data() });
+        });
+        searchRecords(); // 重新過濾並渲染畫面
+    }, (error) => {
+        console.error("資料讀取失敗: ", error);
+        tableBody.innerHTML = `<tr><td colspan="8" class="no-data" style="color:red;">❌ 無法連線至雲端，請檢查設定。</td></tr>`;
+    });
+
+    // 自動初始化時間欄位
+    function initFormDateTime() {
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const day = String(now.getDate()).padStart(2, '0');
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        document.getElementById("inputDate").value = `${year}-${month}-${day}`;
+        document.getElementById("inputTime").value = `${hours}:${minutes}`;
+    }
+
+    // 處理排序變更
+    function handleSort(column) {
+        if (currentSortColumn === column) {
+            isDescending = !isDescending;
+        } else {
+            currentSortColumn = column;
+            isDescending = (column === 'datetime') ? true : false;
+        }
+        updateSortIcons();
+        searchRecords();
+    }
+
+    function updateSortIcons() {
+        ['datetime', 'customer', 'serial'].forEach(id => {
+            const el = document.getElementById(`sort-${id}`);
+            if (id === currentSortColumn) {
+                el.innerText = isDescending ? "⬇️" : "⬆️";
+                el.classList.add("sort-active");
+            } else {
+                el.innerText = "↕️";
+                el.classList.remove("sort-active");
+            }
+        });
+    }
+
+    function applySort(dataArray) {
+        return dataArray.sort((a, b) => {
+            let valA, valB;
+            if (currentSortColumn === 'datetime') {
+                valA = new Date(`${a.date}T${a.time}`).getTime();
+                valB = new Date(`${b.date}T${b.time}`).getTime();
+            } else {
+                valA = a[currentSortColumn] || "";
+                valB = b[currentSortColumn] || "";
+            }
+            if (valA < valB) return isDescending ? 1 : -1;
+            if (valA > valB) return isDescending ? -1 : 1;
+            return 0;
+        });
+    }
+
+    function renderTable(data) {
+        tableBody.innerHTML = "";
+        if (data.length === 0) {
+            tableBody.innerHTML = `<tr><td colspan="8" class="no-data">📭 目前沒有符合條件的紀錄</td></tr>`;
+            return;
+        }
+        const sortedData = applySort(data);
+        sortedData.forEach(record => {
+            const statusClass = record.status.includes("完成") ? "status-done" : "status-wait";
+            const row = `<tr>
+                <td>${record.date}<br><span style="color:#7f8c8d; font-size:12px;">${record.time}</span></td>
+                <td><strong>${record.customer}</strong></td>
+                <td><code>${record.serial}</code></td>
+                <td>${record.task}</td>
+                <td>${record.engineer}</td>
+                <td><span class="status-badge ${statusClass}">${record.status}</span></td>
+                <td><span style="color:#555; font-size:13px;">${record.remarks || ""}</span></td>
+                <td><button class="btn btn-danger" onclick="deleteRecord('${record.id}')">刪除</button></td>
+            </tr>`;
+            tableBody.innerHTML += row;
+        });
+    }
+
+    // 新增紀錄到 Firebase 雲端
+    async function addRecord(event) {
+        event.preventDefault();
+        const newRecord = {
+            date: document.getElementById("inputDate").value,
+            time: document.getElementById("inputTime").value,
+            customer: document.getElementById("inputCustomer").value.trim(),
+            serial: document.getElementById("inputSerial").value.trim(),
+            task: document.getElementById("inputTask").value.trim(),
+            engineer: document.getElementById("inputEngineer").value.trim(),
+            status: document.getElementById("inputStatus").value,
+            remarks: document.getElementById("inputRemarks").value.trim()
+        };
+
+        try {
+            await addDoc(recordsCol, newRecord); // 寫入雲端 Firestore
+            document.getElementById("inputCustomer").value = "";
+            document.getElementById("inputSerial").value = "";
+            document.getElementById("inputTask").value = "";
+            document.getElementById("inputEngineer").value = "";
+            document.getElementById("inputRemarks").value = "";
+            initFormDateTime();
+            alert("🎉 資料已成功同步至雲端！");
+        } catch (e) {
+            alert("❌ 儲存失敗，請檢查網路或 Firebase 權限：" + e);
+        }
+    }
+
+    // 從 Firebase 雲端刪除紀錄
+    async function deleteRecord(id) {
+        if (confirm("⚠️ 確定要刪除這筆雲端維修紀錄嗎？確認後其他人的畫面也會同步刪除。")) {
+            try {
+                await deleteDoc(doc(db, "instrument_records", id));
+            } catch (e) {
+                alert("❌ 刪除失敗：" + e);
+            }
+        }
+    }
+
+    function searchRecords() {
+        const keyword = searchInput.value.trim().toLowerCase();
+        let displayData = database;
+        if (keyword !== "") {
+            displayData = database.filter(record => 
+                (record.customer && record.customer.toLowerCase().includes(keyword)) || 
+                (record.serial && record.serial.toLowerCase().includes(keyword))
+            );
+        }
+        renderTable(displayData);
+    }
+
+    function resetSearch() {
+        searchInput.value = "";
+        searchRecords();
+    }
+
+    // 把函式綁定到 window 物件，確保 HTML 中的 onclick 可以順利呼叫到模組內的函式
+    window.addRecord = addRecord;
+    window.deleteRecord = deleteRecord;
+    window.handleSort = handleSort;
+    window.searchRecords = searchRecords;
+    window.resetSearch = resetSearch;
+
+    // 初始化時間
+    initFormDateTime();
+</script>
+</body>
+</html>
