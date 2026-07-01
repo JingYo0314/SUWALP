@@ -101,11 +101,15 @@
                 </div>
                 <div class="form-group">
                     <label for="inputCustomer">客戶名稱</label>
-                    <input type="text" id="inputCustomer" placeholder="例如：台積電" required>
+                    <!-- 加入 list 屬性與 datalist 標籤來實現歷史建議功能 -->
+                    <input type="text" id="inputCustomer" placeholder="例如：台積電" list="customerList" required>
+                    <datalist id="customerList"></datalist>
                 </div>
                 <div class="form-group">
                     <label for="inputSerial">儀器序號</label>
-                    <input type="text" id="inputSerial" placeholder="例如：SN-A1001" required>
+                    <!-- 加入 list 屬性與 datalist 標籤來實現歷史建議功能 -->
+                    <input type="text" id="inputSerial" placeholder="例如：SN-A1001" list="serialList" required>
+                    <datalist id="serialList"></datalist>
                 </div>
             </div>
             <div class="form-grid">
@@ -119,7 +123,9 @@
                         <option value="更換電池">3. 更換電池</option>
                         <option value="更換泵浦總成">4. 更換泵浦總成</option>
                         <option value="更換點火器">5. 更換點火器</option>
-                        <option value="其他">6. 其他 (自行輸入)</option>
+                        <option value="韌體更新">6. 韌體更新</option>
+                        <option value="新機出貨">7. 新機出貨</option>
+                        <option value="其他">8. 其他 (自行輸入)</option>
                     </select>
                     <input type="text" id="customTask" class="custom-input" placeholder="請手動輸入維修/校正項目...">
                 </div>
@@ -225,15 +231,29 @@
             database.push({ id: doc.id, ...doc.data() });
         });
         searchRecords(); 
-        updateStats(); // 每次資料更新時，同步更新底部統計數字
+        updateStats(); // 更新底部統計數字
+        updateDatalists(); // 更新輸入框的自動提示選單
     }, (error) => {
         console.error("資料讀取失敗: ", error);
         tableBody.innerHTML = `<tr><td colspan="8" class="no-data" style="color:red;">❌ 無法連線至雲端，請檢查設定。</td></tr>`;
     });
 
+    // 💡 新增：自動產生客戶名稱與儀器序號的提示清單
+    function updateDatalists() {
+        const customerList = document.getElementById("customerList");
+        const serialList = document.getElementById("serialList");
+        
+        // 過濾出不重複的歷史紀錄
+        const uniqueCustomers = [...new Set(database.map(record => record.customer))].filter(Boolean);
+        const uniqueSerials = [...new Set(database.map(record => record.serial))].filter(Boolean);
+        
+        // 將這些歷史紀錄塞入 datalist 當中作為提示選項
+        customerList.innerHTML = uniqueCustomers.map(c => `<option value="${c}">`).join("");
+        serialList.innerHTML = uniqueSerials.map(s => `<option value="${s}">`).join("");
+    }
+
     // 更新底部統計資訊功能
     function updateStats() {
-        // 利用 Set 物件的特性來過濾掉重複的名稱與序號
         const uniqueCustomers = new Set(database.map(record => record.customer)).size;
         const uniqueSerials = new Set(database.map(record => record.serial)).size;
         
