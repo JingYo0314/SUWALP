@@ -5,37 +5,24 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TVA管理系統</title>
     <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f4f7f6;
-            color: #333;
-            margin: 0;
-            padding: 20px;
-        }
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            background-color: #fff;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; color: #333; margin: 0; padding: 20px; }
+        .container { max-width: 1200px; margin: 0 auto; background-color: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
         
-        /* 標題加上游標變化與過渡效果 */
-        h1 { 
-            text-align: center; color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px; margin-top: 0; 
-            cursor: pointer; transition: color 0.3s;
-        }
+        /* 標題與頂部導覽 */
+        .header-section { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #3498db; padding-bottom: 10px; margin-bottom: 20px; }
+        h1 { margin: 0; color: #2c3e50; cursor: pointer; transition: color 0.3s; font-size: 28px; }
         h1:hover { color: #3498db; }
+        .user-controls { display: flex; gap: 10px; align-items: center; }
+        .welcome-text { font-weight: bold; color: #7f8c8d; }
         
-        /* 表單區塊樣式 (加入編輯模式切換效果) */
-        .form-section {
-            background-color: #f9fbfd; border: 1px solid #e2e8f0; padding: 20px; border-radius: 6px; margin-bottom: 30px;
-            transition: all 0.3s ease;
-        }
-        .form-section.edit-mode {
-            background-color: #fffbeb; border-color: #fcd34d; box-shadow: 0 0 10px rgba(251, 191, 36, 0.2);
-        }
+        /* 登入畫面樣式 */
+        #loginSection { max-width: 400px; margin: 100px auto; text-align: center; padding: 40px; background: white; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        #loginSection h2 { color: #2c3e50; margin-top: 0; margin-bottom: 20px; }
+        #loginSection input { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #cbd5e1; border-radius: 4px; box-sizing: border-box; font-size: 16px; }
+        
+        /* 表單區塊樣式 */
+        .form-section { background-color: #f9fbfd; border: 1px solid #e2e8f0; padding: 20px; border-radius: 6px; margin-bottom: 30px; transition: all 0.3s ease; }
+        .form-section.edit-mode { background-color: #fffbeb; border-color: #fcd34d; box-shadow: 0 0 10px rgba(251, 191, 36, 0.2); }
         #formTitle { color: #2c3e50; font-size: 18px; margin-top: 0; border-left: 4px solid #3498db; padding-left: 10px; }
         .edit-mode #formTitle { border-left-color: #f59e0b; color: #b45309; }
 
@@ -64,12 +51,13 @@
         .btn-cancel { background-color: #64748b; color: white; padding: 12px; font-size: 16px; display: none; }
         .btn-cancel:hover { background-color: #475569; }
         
-        /* 表格按鈕 */
         .btn-sm { padding: 5px 10px; font-size: 12px; margin-right: 4px; margin-bottom: 4px; display: inline-block;}
         .btn-danger { background-color: #e74c3c; color: white; }
         .btn-danger:hover { background-color: #c0392b; }
         .btn-edit { background-color: #f39c12; color: white; }
         .btn-edit:hover { background-color: #d35400; }
+        .btn-info { background-color: #8e44ad; color: white; }
+        .btn-info:hover { background-color: #732d91; }
 
         /* 表格與排序 */
         table { width: 100%; border-collapse: collapse; margin-top: 15px; }
@@ -80,33 +68,49 @@
         .sortable:hover { background-color: #34495e; }
         .sort-icon { font-size: 12px; margin-left: 5px; opacity: 0.5; }
         .sort-active { opacity: 1; color: #f1c40f; }
-
         .no-data { text-align: center; padding: 30px; color: #94a3b8; font-size: 16px; }
         
-        /* 修復：強制狀態標籤不換行，確保排版整齊 */
-        .status-badge { 
-            padding: 4px 8px; border-radius: 12px; font-size: 12px; font-weight: bold;
-            white-space: nowrap; display: inline-block;
-        }
+        .status-badge { padding: 4px 8px; border-radius: 12px; font-size: 12px; font-weight: bold; white-space: nowrap; display: inline-block; }
         .status-done { background-color: #def7ec; color: #03543f; }
         .status-wait { background-color: #fef3c7; color: #92400e; }
         
-        /* 分頁按鈕樣式 */
+        /* 分頁按鈕 */
         .pagination { display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: 20px; }
         .page-btn { padding: 8px 12px; border: 1px solid #cbd5e1; background-color: #fff; border-radius: 4px; cursor: pointer; color: #333; font-weight: bold; transition: 0.2s; }
         .page-btn:hover:not(:disabled) { background-color: #f1f5f9; }
         .page-btn.active { background-color: #3498db; color: white; border-color: #3498db; }
         .page-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-        /* 底部統計資訊樣式 */
         .footer-stats { text-align: center; margin-top: 20px; font-size: 13px; color: #7f8c8d; padding-top: 15px; border-top: 1px dashed #cbd5e1; }
+        
+        /* 隱藏區塊 */
+        .hidden { display: none !important; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <!-- 點擊標題即可重新載入網頁 (回首頁) -->
-    <h1 onclick="window.location.reload()" title="點擊回到首頁">🌐 TVA管理系統</h1>
+<!-- 登入畫面 -->
+<div id="loginSection">
+    <h2>🔒 系統登入</h2>
+    <form onsubmit="handleLogin(event)">
+        <input type="text" id="loginUsername" placeholder="請輸入帳號" required>
+        <input type="password" id="loginPassword" placeholder="請輸入密碼" required>
+        <button type="submit" class="btn btn-primary" style="width: 100%;">登入系統</button>
+    </form>
+    <p id="loginError" style="color: red; font-size: 14px; margin-top: 15px; display: none;">帳號或密碼錯誤！</p>
+</div>
+
+<!-- 主系統畫面 (預設隱藏) -->
+<div class="container hidden" id="mainApp">
+    
+    <div class="header-section">
+        <h1 onclick="goToHome()" title="點擊回到首頁">🌐 TVA管理系統</h1>
+        <div class="user-controls">
+            <span class="welcome-text" id="welcomeUserText"></span>
+            <button id="manageUsersBtn" class="btn btn-info hidden" onclick="toggleUserManagement()">⚙️ 帳號管理</button>
+            <button class="btn btn-secondary" onclick="handleLogout()">登出</button>
+        </div>
+    </div>
     
     <!-- 1. 新增/編輯資料表單 -->
     <div id="formSection" class="form-section">
@@ -177,16 +181,16 @@
     </div>
 
     <!-- 2. 搜尋區塊 -->
-    <div class="search-section">
+    <div id="searchSection" class="search-section">
         <input type="text" id="searchInput" class="search-input" placeholder="輸入「客戶名稱」或「儀器序號」進行搜尋..." oninput="searchRecords()">
         <button class="btn btn-primary" onclick="searchRecords()">🔍 搜尋</button>
         <button class="btn btn-secondary" onclick="resetSearch()">清除搜尋</button>
     </div>
 
     <!-- 3. 資料表格 -->
-    <table>
+    <table id="recordsTable">
         <thead>
-            <tr>
+            <tr id="tableHeaderRow">
                 <th class="sortable" onclick="handleSort('date')">日期 <span id="sort-date" class="sort-icon sort-active">⬇️</span></th>
                 <th class="sortable" onclick="handleSort('customer')">客戶名稱 <span id="sort-customer" class="sort-icon">↕️</span></th>
                 <th class="sortable" onclick="handleSort('serial')">儀器序號 <span id="sort-serial" class="sort-icon">↕️</span></th>
@@ -194,7 +198,7 @@
                 <th>處理工程師</th>
                 <th>狀態</th>
                 <th>備註</th>
-                <th style="min-width: 90px;">操作</th>
+                <!-- 操作欄位會透過權限動態生成 -->
             </tr>
         </thead>
         <tbody id="recordTableBody">
@@ -202,19 +206,65 @@
         </tbody>
     </table>
 
-    <!-- 新增：分頁按鈕區塊 -->
     <div id="pagination" class="pagination"></div>
 
-    <!-- 4. 底部系統統計 -->
     <div id="statsFooter" class="footer-stats">
         目前此系統累積有 0 間客戶，0 台儀器
     </div>
 </div>
 
+<!-- 帳號管理畫面 (最高權限專用，預設隱藏) -->
+<div class="container hidden" id="userManagementApp">
+    <div class="header-section">
+        <h2>⚙️ 系統帳號權限管理</h2>
+        <button class="btn btn-secondary" onclick="goToHome()">返回系統首頁</button>
+    </div>
+    
+    <div class="form-section">
+        <h3>➕ 新增 / 編輯帳號</h3>
+        <form onsubmit="handleUserSubmit(event)">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>登入帳號</label>
+                    <input type="text" id="regUsername" required>
+                </div>
+                <div class="form-group">
+                    <label>登入密碼</label>
+                    <input type="text" id="regPassword" required>
+                </div>
+                <div class="form-group">
+                    <label>權限等級</label>
+                    <select id="regRole" required>
+                        <option value="1">1. 最高權限 (完全控制)</option>
+                        <option value="2">2. 第二權限 (可新增/編輯)</option>
+                        <option value="3">3. 第三權限 (僅可讀取)</option>
+                    </select>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-submit" id="userSubmitBtn">儲存帳號設定</button>
+            <button type="button" class="btn btn-cancel" id="userCancelBtn" onclick="resetUserForm()" style="margin-top: 10px; width: 100%;">取消編輯</button>
+        </form>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>帳號名稱</th>
+                <th>密碼</th>
+                <th>權限等級</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody id="userTableBody">
+            <!-- 帳號資料動態生成 -->
+        </tbody>
+    </table>
+</div>
+
 <!-- 引入 Firebase SDK -->
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, deleteDoc, doc, updateDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, deleteDoc, doc, updateDoc, onSnapshot, query, where, getDocs, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
     // 🔴 ⚠️ 記得將這裡替換成你專屬的 Firebase 金鑰 ⚠️ 🔴
     const firebaseConfig = {
@@ -231,36 +281,142 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
     const recordsCol = collection(db, "instrument_records"); 
+    const usersCol = collection(db, "users");
 
     let database = []; 
-    let currentDisplayData = []; // 用於存放搜尋與排序後的當前資料
+    let currentDisplayData = []; 
     let currentEditingId = null; 
     
-    // 分頁設定參數
+    let usersDatabase = [];
+    let currentUserEditingId = null;
+
+    // 目前登入者的狀態 (null 表示未登入)
+    let loggedInUser = null; 
+
     let currentPage = 1;
     const itemsPerPage = 10; 
-
-    const tableBody = document.getElementById("recordTableBody");
-    const searchInput = document.getElementById("searchInput");
-
     let currentSortColumn = 'date';
     let isDescending = true;
 
-    // 實時監聽雲端資料
-    onSnapshot(recordsCol, (snapshot) => {
-        database = [];
-        snapshot.forEach((doc) => {
-            database.push({ id: doc.id, ...doc.data() });
-        });
-        searchRecords(); // 讀取完畢後直接執行過濾與渲染
-        updateStats(); 
-        updateDatalists(); 
-    }, (error) => {
-        console.error("資料讀取失敗: ", error);
-        tableBody.innerHTML = `<tr><td colspan="8" class="no-data" style="color:red;">❌ 無法連線至雲端，請檢查設定。</td></tr>`;
-    });
+    // 🌟 系統初始化：檢查並自動建立最高權限帳號 Gary
+    async function initSystemAuth() {
+        const q = query(usersCol, where("username", "==", "Gary"));
+        const snapshot = await getDocs(q);
+        if (snapshot.empty) {
+            // 如果沒找到 Gary，自動建立
+            await setDoc(doc(usersCol, "admin_gary"), {
+                username: "Gary",
+                password: "20120326",
+                role: 1
+            });
+            console.log("已自動建立最高權限帳號 Gary");
+        }
+    }
+    initSystemAuth();
 
-    // 更新自動提示清單
+    // 🌟 登入功能
+    async function handleLogin(event) {
+        event.preventDefault();
+        const user = document.getElementById("loginUsername").value.trim();
+        const pass = document.getElementById("loginPassword").value.trim();
+        
+        const q = query(usersCol, where("username", "==", user), where("password", "==", pass));
+        const snapshot = await getDocs(q);
+        
+        if (!snapshot.empty) {
+            // 登入成功
+            const userData = snapshot.docs[0].data();
+            loggedInUser = { id: snapshot.docs[0].id, username: userData.username, role: Number(userData.role) };
+            
+            document.getElementById("loginSection").classList.add("hidden");
+            document.getElementById("mainApp").classList.remove("hidden");
+            document.getElementById("welcomeUserText").innerText = `👤 登入者：${loggedInUser.username} (權限 ${loggedInUser.role})`;
+            document.getElementById("loginError").style.display = "none";
+            
+            applyPermissions(); // 套用權限畫面
+            initDataListeners(); // 開始抓取資料
+        } else {
+            // 登入失敗
+            document.getElementById("loginError").style.display = "block";
+        }
+    }
+
+    // 🌟 登出功能
+    function handleLogout() {
+        loggedInUser = null;
+        document.getElementById("mainApp").classList.add("hidden");
+        document.getElementById("userManagementApp").classList.add("hidden");
+        document.getElementById("loginSection").classList.remove("hidden");
+        document.getElementById("loginUsername").value = "";
+        document.getElementById("loginPassword").value = "";
+    }
+
+    // 🌟 權限控管邏輯
+    function applyPermissions() {
+        // 角色 1 (最高權限)：顯示帳號管理按鈕
+        if (loggedInUser.role === 1) {
+            document.getElementById("manageUsersBtn").classList.remove("hidden");
+        } else {
+            document.getElementById("manageUsersBtn").classList.add("hidden");
+        }
+
+        // 角色 3 (僅可讀取)：隱藏表單區塊
+        if (loggedInUser.role === 3) {
+            document.getElementById("formSection").classList.add("hidden");
+        } else {
+            document.getElementById("formSection").classList.remove("hidden");
+        }
+
+        // 動態處理表格的「操作」標題
+        const headerRow = document.getElementById("tableHeaderRow");
+        // 先移除可能舊的操作欄位
+        if(document.getElementById("actionHeader")) document.getElementById("actionHeader").remove();
+        
+        if (loggedInUser.role !== 3) {
+            const th = document.createElement("th");
+            th.id = "actionHeader";
+            th.style.minWidth = "90px";
+            th.innerText = "操作";
+            headerRow.appendChild(th);
+        }
+    }
+
+    // 頁面切換邏輯
+    function goToHome() {
+        document.getElementById("userManagementApp").classList.add("hidden");
+        document.getElementById("mainApp").classList.remove("hidden");
+        resetFormState();
+        currentPage = 1;
+        renderTableAndPagination();
+    }
+
+    function toggleUserManagement() {
+        document.getElementById("mainApp").classList.add("hidden");
+        document.getElementById("userManagementApp").classList.remove("hidden");
+    }
+
+    // 資料庫監聽
+    function initDataListeners() {
+        // 監聽維修紀錄
+        onSnapshot(recordsCol, (snapshot) => {
+            database = [];
+            snapshot.forEach((doc) => { database.push({ id: doc.id, ...doc.data() }); });
+            searchRecords(); 
+            updateStats(); 
+            updateDatalists(); 
+        });
+
+        // 監聽使用者帳號 (僅最高權限需要)
+        if (loggedInUser.role === 1) {
+            onSnapshot(usersCol, (snapshot) => {
+                usersDatabase = [];
+                snapshot.forEach((doc) => { usersDatabase.push({ id: doc.id, ...doc.data() }); });
+                renderUserTable();
+            });
+        }
+    }
+
+    // --- 以下為原有的維修紀錄功能 ---
     function updateDatalists() {
         const customerList = document.getElementById("customerList");
         const serialList = document.getElementById("serialList");
@@ -270,17 +426,12 @@
         serialList.innerHTML = uniqueSerials.map(s => `<option value="${s}">`).join("");
     }
 
-    // 更新底部統計
     function updateStats() {
         const uniqueCustomers = new Set(database.map(record => record.customer)).size;
         const uniqueSerials = new Set(database.map(record => record.serial)).size;
-        const statsElement = document.getElementById("statsFooter");
-        if (statsElement) {
-            statsElement.innerText = `目前此系統累積有 ${uniqueCustomers} 間客戶，${uniqueSerials} 台儀器`;
-        }
+        document.getElementById("statsFooter").innerText = `目前此系統累積有 ${uniqueCustomers} 間客戶，${uniqueSerials} 台儀器`;
     }
 
-    // 初始化日期
     function initFormDate() {
         if (currentEditingId) return; 
         const now = new Date();
@@ -290,7 +441,6 @@
         document.getElementById("inputDate").value = `${year}-${month}-${day}`;
     }
 
-    // 其他欄位切換
     function toggleCustomInput(selectId, customInputId) {
         const selectBox = document.getElementById(selectId);
         const customInput = document.getElementById(customInputId);
@@ -304,7 +454,6 @@
         }
     }
 
-    // 排序邏輯
     function handleSort(column) {
         if (currentSortColumn === column) {
             isDescending = !isDescending;
@@ -313,8 +462,6 @@
             isDescending = (column === 'date') ? true : false;
         }
         updateSortIcons();
-        
-        // 排序後切回第一頁並重新渲染
         currentPage = 1; 
         currentDisplayData = applySort(currentDisplayData);
         renderTableAndPagination();
@@ -323,12 +470,14 @@
     function updateSortIcons() {
         ['date', 'customer', 'serial'].forEach(id => {
             const el = document.getElementById(`sort-${id}`);
-            if (id === currentSortColumn) {
-                el.innerText = isDescending ? "⬇️" : "⬆️";
-                el.classList.add("sort-active");
-            } else {
-                el.innerText = "↕️";
-                el.classList.remove("sort-active");
+            if (el) {
+                if (id === currentSortColumn) {
+                    el.innerText = isDescending ? "⬇️" : "⬆️";
+                    el.classList.add("sort-active");
+                } else {
+                    el.innerText = "↕️";
+                    el.classList.remove("sort-active");
+                }
             }
         });
     }
@@ -343,27 +492,34 @@
         });
     }
 
-    // 渲染表格與分頁按鈕
     function renderTableAndPagination() {
+        const tableBody = document.getElementById("recordTableBody");
         tableBody.innerHTML = "";
         
         if (currentDisplayData.length === 0) {
-            tableBody.innerHTML = `<tr><td colspan="8" class="no-data">📭 目前沒有符合條件的紀錄</td></tr>`;
-            document.getElementById("pagination").innerHTML = ""; // 清空分頁
+            const colSpan = loggedInUser && loggedInUser.role === 3 ? 7 : 8;
+            tableBody.innerHTML = `<tr><td colspan="${colSpan}" class="no-data">📭 目前沒有符合條件的紀錄</td></tr>`;
+            document.getElementById("pagination").innerHTML = ""; 
             return;
         }
 
-        // 計算分頁資料
         const totalPages = Math.ceil(currentDisplayData.length / itemsPerPage);
-        // 如果目前頁數大於總頁數(例如刪除資料時)，自動退回最後一頁
         if (currentPage > totalPages) currentPage = totalPages; 
-        
         const startIndex = (currentPage - 1) * itemsPerPage;
         const paginatedData = currentDisplayData.slice(startIndex, startIndex + itemsPerPage);
 
-        // 渲染當前頁面的表格資料
         paginatedData.forEach(record => {
             const statusClass = record.status.includes("完成") ? "status-done" : "status-wait";
+            
+            // 權限判斷：第三權限看不到操作按鈕
+            let actionHtml = '';
+            if (loggedInUser && loggedInUser.role !== 3) {
+                actionHtml = `<td>
+                    <button class="btn btn-sm btn-edit" onclick="editRecord('${record.id}')">編輯</button>
+                    <button class="btn btn-sm btn-danger" onclick="deleteRecord('${record.id}')">刪除</button>
+                </td>`;
+            }
+
             const row = `<tr>
                 <td><strong>${record.date}</strong></td>
                 <td><strong>${record.customer}</strong></td>
@@ -372,10 +528,7 @@
                 <td>${record.engineer}</td>
                 <td><span class="status-badge ${statusClass}">${record.status}</span></td>
                 <td><span style="color:#555; font-size:13px;">${record.remarks || ""}</span></td>
-                <td>
-                    <button class="btn btn-sm btn-edit" onclick="editRecord('${record.id}')">編輯</button>
-                    <button class="btn btn-sm btn-danger" onclick="deleteRecord('${record.id}')">刪除</button>
-                </td>
+                ${actionHtml}
             </tr>`;
             tableBody.innerHTML += row;
         });
@@ -383,59 +536,39 @@
         renderPaginationButtons(totalPages);
     }
 
-    // 動態產生分頁按鈕
     function renderPaginationButtons(totalPages) {
         const paginationDiv = document.getElementById("pagination");
         paginationDiv.innerHTML = "";
+        if (totalPages <= 1) return; 
 
-        if (totalPages <= 1) return; // 只有一頁就不顯示按鈕
-
-        // 上一頁按鈕
         const prevBtn = document.createElement("button");
         prevBtn.innerText = "上一頁";
         prevBtn.className = "page-btn";
         prevBtn.disabled = (currentPage === 1);
-        prevBtn.onclick = () => {
-            if (currentPage > 1) {
-                currentPage--;
-                renderTableAndPagination();
-            }
-        };
+        prevBtn.onclick = () => { if (currentPage > 1) { currentPage--; renderTableAndPagination(); } };
         paginationDiv.appendChild(prevBtn);
 
-        // 數字按鈕
         for (let i = 1; i <= totalPages; i++) {
             const pageBtn = document.createElement("button");
             pageBtn.innerText = i;
             pageBtn.className = (i === currentPage) ? "page-btn active" : "page-btn";
-            pageBtn.onclick = () => {
-                currentPage = i;
-                renderTableAndPagination();
-            };
+            pageBtn.onclick = () => { currentPage = i; renderTableAndPagination(); };
             paginationDiv.appendChild(pageBtn);
         }
 
-        // 下一頁按鈕
         const nextBtn = document.createElement("button");
         nextBtn.innerText = "下一頁";
         nextBtn.className = "page-btn";
         nextBtn.disabled = (currentPage === totalPages);
-        nextBtn.onclick = () => {
-            if (currentPage < totalPages) {
-                currentPage++;
-                renderTableAndPagination();
-            }
-        };
+        nextBtn.onclick = () => { if (currentPage < totalPages) { currentPage++; renderTableAndPagination(); } };
         paginationDiv.appendChild(nextBtn);
     }
 
-    // 點擊表格的「編輯」
     function editRecord(id) {
         const record = database.find(r => r.id === id);
         if (!record) return;
 
         currentEditingId = id; 
-        
         document.getElementById("formSection").classList.add("edit-mode");
         document.getElementById("formTitle").innerText = "✏️ 編輯維修/校正紀錄";
         document.getElementById("submitBtn").innerText = "💾 更新並同步至雲端";
@@ -475,30 +608,23 @@
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    // 重置表單狀態 
     function resetFormState() {
         currentEditingId = null;
         document.getElementById("recordForm").reset();
-        
         document.getElementById("formSection").classList.remove("edit-mode");
         document.getElementById("formTitle").innerText = "➕ 新增維修/校正紀錄";
         document.getElementById("submitBtn").innerText = "儲存並同步至雲端";
         document.getElementById("submitBtn").classList.remove("edit-active");
         document.getElementById("cancelEditBtn").style.display = "none";
-
         document.getElementById("customTask").style.display = "none";
         document.getElementById("customEngineer").style.display = "none";
-
         initFormDate(); 
     }
 
-    // 處理表單送出
     async function handleFormSubmit(event) {
         event.preventDefault();
-
         let finalTask = document.getElementById("inputTask").value;
         if (finalTask === "其他") finalTask = document.getElementById("customTask").value.trim();
-
         let finalEngineer = document.getElementById("inputEngineer").value;
         if (finalEngineer === "其他") finalEngineer = document.getElementById("customEngineer").value.trim();
 
@@ -519,29 +645,21 @@
             } else {
                 await addDoc(recordsCol, recordData); 
                 alert("🎉 資料已成功同步至雲端！");
-                currentPage = 1; // 新增資料後回到第一頁
+                currentPage = 1;
             }
             resetFormState(); 
-        } catch (e) {
-            alert("❌ 儲存失敗，請檢查網路狀態：" + e);
-        }
+        } catch (e) { alert("❌ 儲存失敗，請檢查網路狀態：" + e); }
     }
 
-    // 從 Firebase 刪除紀錄
     async function deleteRecord(id) {
         if (confirm("⚠️ 確定要刪除這筆紀錄嗎？確認後無法復原。")) {
-            try {
-                await deleteDoc(doc(db, "instrument_records", id));
-            } catch (e) {
-                alert("❌ 刪除失敗：" + e);
-            }
+            try { await deleteDoc(doc(db, "instrument_records", id)); } 
+            catch (e) { alert("❌ 刪除失敗：" + e); }
         }
     }
 
-    // 搜尋功能
     function searchRecords() {
-        const keyword = searchInput.value.trim().toLowerCase();
-        
+        const keyword = document.getElementById("searchInput").value.trim().toLowerCase();
         if (keyword !== "") {
             currentDisplayData = database.filter(record => 
                 (record.customer && record.customer.toLowerCase().includes(keyword)) || 
@@ -550,19 +668,110 @@
         } else {
             currentDisplayData = [...database];
         }
-        
-        // 搜尋時套用排序，並且重置到第一頁
         currentPage = 1;
         currentDisplayData = applySort(currentDisplayData);
         renderTableAndPagination();
     }
 
     function resetSearch() {
-        searchInput.value = "";
+        document.getElementById("searchInput").value = "";
         searchRecords();
     }
 
+
+    // --- 以下為帳號管理專區功能 (最高權限) ---
+    function renderUserTable() {
+        const tbody = document.getElementById("userTableBody");
+        tbody.innerHTML = "";
+        
+        usersDatabase.forEach(user => {
+            let roleText = "";
+            if(user.role === 1) roleText = "1. 最高權限";
+            if(user.role === 2) roleText = "2. 第二權限";
+            if(user.role === 3) roleText = "3. 第三權限";
+
+            // 防止自己刪除自己
+            let deleteBtn = `<button class="btn btn-sm btn-danger" onclick="deleteUser('${user.id}')">刪除</button>`;
+            if (user.username === loggedInUser.username) {
+                deleteBtn = `<span style="color:#95a5a6; font-size:12px;">無法刪除自己</span>`;
+            }
+
+            const row = `<tr>
+                <td><strong>${user.username}</strong></td>
+                <td><code>${user.password}</code></td>
+                <td>${roleText}</td>
+                <td>
+                    <button class="btn btn-sm btn-edit" onclick="editUser('${user.id}')">編輯</button>
+                    ${deleteBtn}
+                </td>
+            </tr>`;
+            tbody.innerHTML += row;
+        });
+    }
+
+    async function handleUserSubmit(event) {
+        event.preventDefault();
+        const userData = {
+            username: document.getElementById("regUsername").value.trim(),
+            password: document.getElementById("regPassword").value.trim(),
+            role: Number(document.getElementById("regRole").value)
+        };
+
+        try {
+            if (currentUserEditingId) {
+                await updateDoc(doc(db, "users", currentUserEditingId), userData);
+                alert("✅ 帳號更新成功！");
+            } else {
+                // 檢查帳號是否重複
+                const q = query(usersCol, where("username", "==", userData.username));
+                const snapshot = await getDocs(q);
+                if(!snapshot.empty){
+                    alert("❌ 此帳號名稱已被使用，請換一個！");
+                    return;
+                }
+                await addDoc(usersCol, userData);
+                alert("🎉 新帳號建立成功！");
+            }
+            resetUserForm();
+        } catch (e) { alert("❌ 操作失敗：" + e); }
+    }
+
+    function editUser(id) {
+        const user = usersDatabase.find(u => u.id === id);
+        if(!user) return;
+        currentUserEditingId = id;
+        document.getElementById("regUsername").value = user.username;
+        document.getElementById("regPassword").value = user.password;
+        document.getElementById("regRole").value = user.role;
+        document.getElementById("userSubmitBtn").innerText = "💾 更新帳號資料";
+        document.getElementById("userSubmitBtn").classList.add("edit-active");
+        document.getElementById("userCancelBtn").style.display = "block";
+    }
+
+    function resetUserForm() {
+        currentUserEditingId = null;
+        document.getElementById("regUsername").value = "";
+        document.getElementById("regPassword").value = "";
+        document.getElementById("regRole").value = "1";
+        document.getElementById("userSubmitBtn").innerText = "儲存帳號設定";
+        document.getElementById("userSubmitBtn").classList.remove("edit-active");
+        document.getElementById("userCancelBtn").style.display = "none";
+    }
+
+    async function deleteUser(id) {
+        if (confirm("⚠️ 確定要刪除此帳號嗎？")) {
+            try { await deleteDoc(doc(db, "users", id)); } 
+            catch (e) { alert("❌ 刪除失敗：" + e); }
+        }
+    }
+
+
     // 綁定全域函式供 HTML onclick 使用
+    window.handleLogin = handleLogin;
+    window.handleLogout = handleLogout;
+    window.goToHome = goToHome;
+    window.toggleUserManagement = toggleUserManagement;
+    
     window.handleFormSubmit = handleFormSubmit;
     window.deleteRecord = deleteRecord;
     window.editRecord = editRecord;
@@ -572,7 +781,11 @@
     window.resetSearch = resetSearch;
     window.toggleCustomInput = toggleCustomInput;
 
-    // 初始化
+    window.handleUserSubmit = handleUserSubmit;
+    window.editUser = editUser;
+    window.deleteUser = deleteUser;
+    window.resetUserForm = resetUserForm;
+
     initFormDate();
 </script>
 </body>
