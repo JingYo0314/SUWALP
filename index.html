@@ -15,10 +15,21 @@
         .user-controls { display: flex; gap: 10px; align-items: center; }
         .welcome-text { font-weight: bold; color: #7f8c8d; }
         
-        /* 登入畫面 */
-        #loginSection { max-width: 400px; margin: 100px auto; text-align: center; padding: 40px; background: white; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
-        #loginSection h2 { color: #2c3e50; margin-top: 0; margin-bottom: 20px; }
-        #loginSection input { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #cbd5e1; border-radius: 4px; box-sizing: border-box; font-size: 16px; }
+        /* 全新滿版背景登入畫面 */
+        #loginSection { 
+            position: fixed; top: 0; left: 0; width: 100%; height: 100vh;
+            background-image: url('bg.jpg');
+            background-size: cover; background-position: center; background-repeat: no-repeat;
+            display: flex; align-items: center; justify-content: center; z-index: 1000;
+        }
+        .login-box { 
+            background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(6px); 
+            padding: 40px; border-radius: 12px; box-shadow: 0 15px 35px rgba(0,0,0,0.3); 
+            width: 90%; max-width: 400px; text-align: center; 
+        }
+        .login-box h2 { color: #2c3e50; margin-top: 0; margin-bottom: 25px; font-size: 26px; font-weight: 800; text-shadow: 1px 1px 2px rgba(255,255,255,0.8); }
+        .login-box input { width: 100%; padding: 14px; margin-bottom: 15px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box; font-size: 16px; background: rgba(255,255,255,0.9); }
+        .login-box input:focus { border-color: #3498db; outline: none; box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2); }
         
         /* 系統主選單 (Dashboard) */
         .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-top: 30px; }
@@ -41,7 +52,6 @@
         .form-group input:focus, .form-group select:focus { border-color: #3498db; }
         .custom-input { display: none; background-color: #f1f5f9; } 
         
-        /* 聯絡人動態表單區塊 */
         .contact-row { display: flex; gap: 10px; margin-bottom: 10px; align-items: center; }
         .contact-row input { flex: 1; margin-bottom: 0 !important; }
         .remove-contact-btn { background: #e74c3c; color: white; border: none; border-radius: 4px; padding: 8px 12px; cursor: pointer; }
@@ -50,7 +60,6 @@
         .search-section { display: flex; align-items: center; margin: 20px 0; gap: 10px; background-color: #edf2f7; padding: 15px; border-radius: 6px; }
         .search-input { flex: 1; padding: 10px 15px; font-size: 15px; border: 1px solid #cbd5e1; border-radius: 4px; outline: none; }
         
-        /* 按鈕樣式 */
         .btn { padding: 10px 20px; font-size: 14px; border: none; border-radius: 4px; cursor: pointer; transition: 0.2s; font-weight: bold; }
         .btn-primary { background-color: #3498db; color: white; }
         .btn-primary:hover { background-color: #2980b9; }
@@ -70,7 +79,6 @@
         .btn-info { background-color: #8e44ad; color: white; }
         .btn-success { background-color: #27ae60; color: white; }
 
-        /* 表格與排序 */
         table { width: 100%; border-collapse: collapse; margin-top: 15px; }
         th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #e2e8f0; font-size: 14px; }
         th { background-color: #2c3e50; color: white; }
@@ -85,23 +93,27 @@
         .status-done { background-color: #def7ec; color: #03543f; }
         .status-wait { background-color: #fef3c7; color: #92400e; }
         
-        /* 分頁按鈕 */
         .pagination { display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: 20px; flex-wrap: wrap; }
         .page-btn { padding: 8px 12px; border: 1px solid #cbd5e1; background-color: #fff; border-radius: 4px; cursor: pointer; color: #333; font-weight: bold; transition: 0.2s; }
         .page-btn:hover:not(:disabled) { background-color: #f1f5f9; }
         .page-btn.active { background-color: #3498db; color: white; border-color: #3498db; }
         .page-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-        /* 彈出視窗 Modal (用於顯示主機資料) */
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; }
         .modal-content { background: white; padding: 30px; border-radius: 8px; width: 90%; max-width: 600px; max-height: 80vh; overflow-y: auto; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
         .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #3498db; padding-bottom: 10px; margin-bottom: 15px; }
         .modal-header h3 { margin: 0; color: #2c3e50; }
         .close-modal { background: none; border: none; font-size: 24px; cursor: pointer; color: #7f8c8d; }
-        .instrument-badge { display: inline-block; background: #e2e8f0; color: #334155; padding: 6px 12px; border-radius: 16px; margin: 4px; font-family: monospace; font-size: 14px; }
-
-        .footer-stats { text-align: center; margin-top: 20px; font-size: 13px; color: #7f8c8d; padding-top: 15px; border-top: 1px dashed #cbd5e1; }
         
+        /* 升級為可點擊標籤 */
+        .instrument-badge { 
+            display: inline-block; background: #3498db; color: white; padding: 8px 14px; 
+            border-radius: 16px; margin: 5px; font-family: monospace; font-size: 15px; 
+            cursor: pointer; transition: background-color 0.2s; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .instrument-badge:hover { background: #2980b9; transform: translateY(-2px); }
+        
+        .footer-stats { text-align: center; margin-top: 20px; font-size: 13px; color: #7f8c8d; padding-top: 15px; border-top: 1px dashed #cbd5e1; }
         .hidden { display: none !important; }
     </style>
 </head>
@@ -109,13 +121,15 @@
 
 <!-- 登入畫面 -->
 <div id="loginSection">
-    <h2>🔒 系統登入</h2>
-    <form onsubmit="handleLogin(event)">
-        <input type="text" id="loginUsername" placeholder="請輸入帳號" required>
-        <input type="password" id="loginPassword" placeholder="請輸入密碼" required>
-        <button type="submit" class="btn btn-primary" style="width: 100%;">登入系統</button>
-    </form>
-    <p id="loginError" style="color: red; font-size: 14px; margin-top: 15px; display: none;">帳號或密碼錯誤！</p>
+    <div class="login-box">
+        <h2>🔒 TVA 系統登入</h2>
+        <form onsubmit="handleLogin(event)">
+            <input type="text" id="loginUsername" placeholder="請輸入帳號" required>
+            <input type="password" id="loginPassword" placeholder="請輸入密碼" required>
+            <button type="submit" class="btn btn-primary" style="width: 100%; padding: 12px; font-size: 18px;">登入系統</button>
+        </form>
+        <p id="loginError" style="color: #e74c3c; font-size: 14px; margin-top: 15px; display: none; font-weight: bold;">⚠️ 帳號或密碼錯誤！</p>
+    </div>
 </div>
 
 <!-- 系統主選單 (Dashboard) -->
@@ -206,6 +220,7 @@
     </table>
 </div>
 
+<!-- 查看客戶名下主機彈窗 -->
 <div id="instrumentModal" class="modal-overlay">
     <div class="modal-content">
         <div class="modal-header">
@@ -234,7 +249,6 @@
             <div class="form-grid">
                 <div class="form-group"><label>日期</label><input type="date" id="inputDate" required></div>
                 <div class="form-group"><label>客戶名稱</label><input type="text" id="inputCustomer" placeholder="例如：台積電" list="customerList" required><datalist id="customerList"></datalist></div>
-                <!-- ✨ 新增：onchange 觸發自動帶入客戶功能 -->
                 <div class="form-group"><label>儀器序號</label><input type="text" id="inputSerial" placeholder="例如：SN-A1001" list="serialList" required onchange="autoFillCustomer()"><datalist id="serialList"></datalist></div>
             </div>
             <div class="form-grid">
@@ -272,7 +286,14 @@
                     </select>
                 </div>
             </div>
-            <div class="form-grid" style="grid-template-columns: 1fr;"><div class="form-group"><label>備註</label><input type="text" id="inputRemarks" placeholder="選填備註事項..."></div></div>
+            
+            <div class="form-grid" style="grid-template-columns: 1fr;">
+                <div class="form-group">
+                    <label>備註</label>
+                    <input type="text" id="inputRemarks" placeholder="選填備註事項...">
+                </div>
+            </div>
+
             <div class="form-actions">
                 <button type="submit" id="submitBtn" class="btn btn-submit">儲存並同步至雲端</button>
                 <button type="button" id="cancelEditBtn" class="btn btn-cancel" onclick="resetFormState()">取消編輯</button>
@@ -291,7 +312,7 @@
                 <th class="sortable" onclick="handleSort('date')">日期 <span id="sort-date" class="sort-icon sort-active">⬇️</span></th>
                 <th class="sortable" onclick="handleSort('customer')">客戶名稱 <span id="sort-customer" class="sort-icon">↕️</span></th>
                 <th class="sortable" onclick="handleSort('serial')">儀器序號 <span id="sort-serial" class="sort-icon">↕️</span></th>
-                <th>維修/校正項目</th><th>處理工程師</th><th>狀態</th><th>備註</th>
+                <th>維修項目</th><th>工程師</th><th>狀態</th><th>備註</th>
             </tr>
         </thead>
         <tbody id="recordTableBody"><tr><td colspan="8" class="no-data">☁️ 雲端資料庫連線中...</td></tr></tbody>
@@ -353,30 +374,24 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
+    
     const recordsCol = collection(db, "instrument_records"); 
     const usersCol = collection(db, "users");
     const customersCol = collection(db, "customers"); 
 
     let loggedInUser = null; 
+    let database = []; let currentDisplayData = []; 
+    let usersDatabase = []; let customersDatabase = [];
     
-    // 資料庫陣列
-    let database = []; 
-    let currentDisplayData = []; 
-    let usersDatabase = [];
-    let customersDatabase = [];
-    
-    // 編輯追蹤ID
     let currentEditingId = null; 
     let currentUserEditingId = null;
     let currentCustEditingId = null;
 
-    // 分頁與排序
     let currentPage = 1;
     const itemsPerPage = 10; 
     let currentSortColumn = 'date';
     let isDescending = true;
 
-    // 系統初始化
     async function initSystemAuth() {
         const q = query(usersCol, where("username", "==", "Gary"));
         const snapshot = await getDocs(q);
@@ -386,7 +401,6 @@
     }
     initSystemAuth();
 
-    // 頁面路由切換
     window.goToApp = function(appId) {
         document.getElementById("dashboardApp").classList.add("hidden");
         document.getElementById("mainApp").classList.add("hidden");
@@ -398,7 +412,6 @@
         if(appId === 'customerApp') { resetCustomerForm(); renderCustomerTable(); }
     }
 
-    // 登入
     window.handleLogin = async function(event) {
         event.preventDefault();
         const user = document.getElementById("loginUsername").value.trim();
@@ -423,7 +436,6 @@
         }
     }
 
-    // 登出
     window.handleLogout = function() {
         loggedInUser = null;
         document.getElementById("dashboardApp").classList.add("hidden");
@@ -435,15 +447,10 @@
         document.getElementById("loginPassword").value = "";
     }
 
-    // 權限控管
     function applyPermissions() {
-        if (loggedInUser.role === 1) {
-            document.getElementById("dashboardUserBtn").classList.remove("hidden");
-        } else {
-            document.getElementById("dashboardUserBtn").classList.add("hidden");
-        }
+        if (loggedInUser.role === 1) document.getElementById("dashboardUserBtn").classList.remove("hidden");
+        else document.getElementById("dashboardUserBtn").classList.add("hidden");
 
-        // 角色 3：隱藏新增表單
         if (loggedInUser.role === 3) {
             document.getElementById("formSection").classList.add("hidden");
             document.getElementById("customerFormSection").classList.add("hidden");
@@ -452,19 +459,14 @@
             document.getElementById("customerFormSection").classList.remove("hidden");
         }
 
-        // 動態處理主機表格操作欄位
         const headerRow = document.getElementById("tableHeaderRow");
         if(document.getElementById("actionHeader")) document.getElementById("actionHeader").remove();
         if (loggedInUser.role !== 3) {
-            const th = document.createElement("th");
-            th.id = "actionHeader";
-            th.style.minWidth = "90px";
-            th.innerText = "操作";
+            const th = document.createElement("th"); th.id = "actionHeader"; th.style.minWidth = "90px"; th.innerText = "操作";
             headerRow.appendChild(th);
         }
     }
 
-    // 資料監聽
     function initDataListeners() {
         onSnapshot(recordsCol, (snapshot) => {
             database = [];
@@ -501,7 +503,6 @@
         event.preventDefault();
         const name = document.getElementById("custName").value.trim();
         const address = document.getElementById("custAddress").value.trim();
-        
         const contacts = [];
         document.querySelectorAll('.contact-row').forEach(row => {
             const cName = row.querySelector('.contact-name').value.trim();
@@ -524,9 +525,7 @@
         if(displayData.length === 0){ tbody.innerHTML = `<tr><td colspan="4" class="no-data">找不到客戶資料</td></tr>`; return; }
 
         displayData.forEach(cust => {
-            let contactsHtml = cust.contacts && cust.contacts.length > 0 
-                ? cust.contacts.map(c => `<div>👤 ${c.name} : ${c.phone}</div>`).join("") 
-                : '<span style="color:#aaa;">無資料</span>';
+            let contactsHtml = cust.contacts && cust.contacts.length > 0 ? cust.contacts.map(c => `<div>👤 ${c.name} : ${c.phone}</div>`).join("") : '<span style="color:#aaa;">無資料</span>';
             let actionHtml = `<button class="btn btn-sm btn-success" onclick="viewCustomerInstruments('${cust.name}')">🔍 查看名下主機</button>`;
             
             if(loggedInUser && loggedInUser.role !== 3) {
@@ -540,16 +539,13 @@
     window.editCustomer = function(id) {
         const cust = customersDatabase.find(c => c.id === id); if(!cust) return;
         currentCustEditingId = id;
-        document.getElementById("customerFormSection").classList.add("edit-mode");
-        document.getElementById("custFormTitle").innerText = "✏️ 編輯客戶資料";
-        document.getElementById("custSubmitBtn").innerText = "💾 更新客戶資料";
-        document.getElementById("custSubmitBtn").classList.add("edit-active");
-        document.getElementById("custCancelEditBtn").style.display = "block";
+        document.getElementById("customerFormSection").classList.add("edit-mode"); document.getElementById("custFormTitle").innerText = "✏️ 編輯客戶資料";
+        document.getElementById("custSubmitBtn").innerText = "💾 更新客戶資料"; document.getElementById("custSubmitBtn").classList.add("edit-active"); document.getElementById("custCancelEditBtn").style.display = "block";
         document.getElementById("custName").value = cust.name; document.getElementById("custAddress").value = cust.address;
 
         const container = document.getElementById("contactContainer"); container.innerHTML = ""; 
         if(cust.contacts && cust.contacts.length > 0) { cust.contacts.forEach(c => window.addContactRow(c.name, c.phone)); } 
-        else { container.innerHTML = `<div class="contact-row"><input type="text" class="contact-name" placeholder="聯絡人姓名"><input type="text" class="contact-phone" placeholder="電話/分機/Email"><button type="button" class="remove-contact-btn" onclick="this.parentElement.remove()" style="display:none;">X</button></div>`; }
+        else { window.addContactRow(); }
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
@@ -559,40 +555,47 @@
 
     window.resetCustomerForm = function() {
         currentCustEditingId = null; document.getElementById("customerForm").reset();
-        document.getElementById("customerFormSection").classList.remove("edit-mode");
-        document.getElementById("custFormTitle").innerText = "➕ 新增客戶資料"; document.getElementById("custSubmitBtn").innerText = "儲存客戶資料";
-        document.getElementById("custSubmitBtn").classList.remove("edit-active"); document.getElementById("custCancelEditBtn").style.display = "none";
-        document.getElementById("contactContainer").innerHTML = `<div class="contact-row"><input type="text" class="contact-name" placeholder="聯絡人姓名"><input type="text" class="contact-phone" placeholder="電話/分機/Email"><button type="button" class="remove-contact-btn" onclick="this.parentElement.remove()" style="display:none;">X</button></div>`;
+        document.getElementById("customerFormSection").classList.remove("edit-mode"); document.getElementById("custFormTitle").innerText = "➕ 新增客戶資料";
+        document.getElementById("custSubmitBtn").innerText = "儲存客戶資料"; document.getElementById("custSubmitBtn").classList.remove("edit-active"); document.getElementById("custCancelEditBtn").style.display = "none";
+        document.getElementById("contactContainer").innerHTML = ""; window.addContactRow();
     }
 
+    // ✨ 點擊彈窗按鈕，帶參數自動跳轉並搜尋
     window.viewCustomerInstruments = function(customerName) {
         const matchedRecords = database.filter(r => r.customer === customerName);
         const uniqueSerials = [...new Set(matchedRecords.map(r => r.serial))].filter(Boolean);
         document.getElementById("modalTitle").innerText = `🏢 ${customerName} 名下主機序號`;
         const modalBody = document.getElementById("modalBody");
-        if(uniqueSerials.length === 0) { modalBody.innerHTML = `<p style="color:#7f8c8d;">此客戶目前沒有登記任何主機紀錄。</p>`; } 
-        else { modalBody.innerHTML = uniqueSerials.map(s => `<span class="instrument-badge">${s}</span>`).join(" "); }
+        if(uniqueSerials.length === 0) { 
+            modalBody.innerHTML = `<p style="color:#7f8c8d;">此客戶目前沒有登記任何主機紀錄。</p>`; 
+        } else { 
+            modalBody.innerHTML = uniqueSerials.map(s => 
+                `<span class="instrument-badge" title="點擊查詢歷史紀錄" onclick="goToHostManagementWithSerial('${s}')">📌 ${s} </span>`
+            ).join(" "); 
+        }
         document.getElementById("instrumentModal").style.display = "flex";
     }
     window.closeModal = function() { document.getElementById("instrumentModal").style.display = "none"; }
 
+    // ✨ 專屬跳轉與過濾函數
+    window.goToHostManagementWithSerial = function(serial) {
+        closeModal();
+        goToApp('mainApp');
+        document.getElementById("searchInput").value = serial;
+        searchRecords();
+    }
+
 
     /* ================== 主機管理 ================== */
-    // ✨ 新功能 1：輸入序號時，自動帶入客戶名稱
     window.autoFillCustomer = function() {
         const serialInput = document.getElementById("inputSerial").value.trim();
         if (!serialInput) return;
-        
-        // 尋找維修歷史紀錄中是否已經有相同的序號
         const matchedRecord = database.find(r => r.serial === serialInput);
-        if (matchedRecord && matchedRecord.customer) {
-            document.getElementById("inputCustomer").value = matchedRecord.customer;
-        }
+        if (matchedRecord && matchedRecord.customer) { document.getElementById("inputCustomer").value = matchedRecord.customer; }
     }
 
     function updateDatalists() {
-        const customerList = document.getElementById("customerList");
-        const serialList = document.getElementById("serialList");
+        const customerList = document.getElementById("customerList"); const serialList = document.getElementById("serialList");
         const uniqueCustomersHistory = [...new Set(database.map(record => record.customer))];
         const uniqueCustomersDB = customersDatabase.map(c => c.name);
         const allCustomers = [...new Set([...uniqueCustomersHistory, ...uniqueCustomersDB])].filter(Boolean);
@@ -663,70 +666,43 @@
                     <button class="btn btn-sm btn-danger" onclick="deleteRecord('${record.id}')">刪除</button>
                 </td>`;
             }
+            
             tableBody.innerHTML += `<tr><td><strong>${record.date}</strong></td><td><strong>${record.customer}</strong></td><td><code>${record.serial}</code></td><td>${record.task}</td><td>${record.engineer}</td><td><span class="status-badge ${statusClass}">${record.status}</span></td><td><span style="color:#555; font-size:13px;">${record.remarks || ""}</span></td>${actionHtml}</tr>`;
         });
-        
         renderPaginationButtons(totalPages);
     }
 
-    // ✨ 新功能 2：智慧型分頁省略號顯示邏輯
     function renderPaginationButtons(totalPages) {
-        const paginationDiv = document.getElementById("pagination");
-        paginationDiv.innerHTML = "";
+        const paginationDiv = document.getElementById("pagination"); paginationDiv.innerHTML = "";
         if (totalPages <= 1) return; 
 
-        // 上一頁按鈕
-        const prevBtn = document.createElement("button");
-        prevBtn.innerText = "上一頁"; prevBtn.className = "page-btn"; prevBtn.disabled = (currentPage === 1);
+        const prevBtn = document.createElement("button"); prevBtn.innerText = "上一頁"; prevBtn.className = "page-btn"; prevBtn.disabled = (currentPage === 1);
         prevBtn.onclick = () => { if (currentPage > 1) { currentPage--; renderTableAndPagination(); } };
         paginationDiv.appendChild(prevBtn);
 
-        // 計算要顯示的頁碼 (包含首3頁、末2頁、以及當前頁面的前後)
         let pageNumbers = [];
-        for (let i = 1; i <= totalPages; i++) {
-            if (
-                i <= 3 || 
-                i >= totalPages - 1 || 
-                (i >= currentPage - 1 && i <= currentPage + 1)
-            ) {
-                pageNumbers.push(i);
-            }
-        }
-        
-        // 去除重複並排序
+        for (let i = 1; i <= totalPages; i++) { if (i <= 3 || i >= totalPages - 1 || (i >= currentPage - 1 && i <= currentPage + 1)) pageNumbers.push(i); }
         pageNumbers = [...new Set(pageNumbers)].sort((a, b) => a - b);
 
-        // 渲染按鈕與省略號
         let lastPage = 0;
         pageNumbers.forEach(p => {
             if (lastPage && p - lastPage > 1) {
-                const dots = document.createElement("span");
-                dots.innerText = "........";
-                dots.style.margin = "0 8px";
-                dots.style.color = "#94a3b8";
-                dots.style.fontWeight = "bold";
-                paginationDiv.appendChild(dots);
+                const dots = document.createElement("span"); dots.innerText = "........"; dots.style.margin = "0 8px"; dots.style.color = "#94a3b8"; dots.style.fontWeight = "bold"; paginationDiv.appendChild(dots);
             }
-            
-            const pageBtn = document.createElement("button");
-            pageBtn.innerText = p; 
-            pageBtn.className = (p === currentPage) ? "page-btn active" : "page-btn";
-            pageBtn.onclick = () => { currentPage = p; renderTableAndPagination(); };
-            paginationDiv.appendChild(pageBtn);
-            
+            const pageBtn = document.createElement("button"); pageBtn.innerText = p; pageBtn.className = (p === currentPage) ? "page-btn active" : "page-btn";
+            pageBtn.onclick = () => { currentPage = p; renderTableAndPagination(); }; paginationDiv.appendChild(pageBtn);
             lastPage = p;
         });
 
-        // 下一頁按鈕
-        const nextBtn = document.createElement("button");
-        nextBtn.innerText = "下一頁"; nextBtn.className = "page-btn"; nextBtn.disabled = (currentPage === totalPages);
+        const nextBtn = document.createElement("button"); nextBtn.innerText = "下一頁"; nextBtn.className = "page-btn"; nextBtn.disabled = (currentPage === totalPages);
         nextBtn.onclick = () => { if (currentPage < totalPages) { currentPage++; renderTableAndPagination(); } };
         paginationDiv.appendChild(nextBtn);
     }
 
     window.editRecord = function(id) {
         const record = database.find(r => r.id === id); if (!record) return; currentEditingId = id; 
-        document.getElementById("formSection").classList.add("edit-mode"); document.getElementById("formTitle").innerText = "✏️ 編輯維修/校正紀錄"; document.getElementById("submitBtn").innerText = "💾 更新並同步至雲端"; document.getElementById("submitBtn").classList.add("edit-active"); document.getElementById("cancelEditBtn").style.display = "block";
+        document.getElementById("formSection").classList.add("edit-mode"); document.getElementById("formTitle").innerText = "✏️ 編輯維修/校正紀錄"; 
+        document.getElementById("submitBtn").innerText = "💾 更新並同步至雲端"; document.getElementById("submitBtn").classList.add("edit-active"); document.getElementById("cancelEditBtn").style.display = "block";
         document.getElementById("inputDate").value = record.date; document.getElementById("inputCustomer").value = record.customer; document.getElementById("inputSerial").value = record.serial; document.getElementById("inputStatus").value = record.status; document.getElementById("inputRemarks").value = record.remarks || "";
 
         const taskSelect = document.getElementById("inputTask"); const customTaskInput = document.getElementById("customTask");
@@ -736,18 +712,23 @@
         const engSelect = document.getElementById("inputEngineer"); const customEngInput = document.getElementById("customEngineer");
         const engOptions = Array.from(engSelect.options).map(opt => opt.value);
         if (engOptions.includes(record.engineer)) { engSelect.value = record.engineer; customEngInput.style.display = "none"; } else { engSelect.value = "其他"; customEngInput.style.display = "block"; customEngInput.value = record.engineer; }
+        
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     window.resetFormState = function() {
-        currentEditingId = null; document.getElementById("recordForm").reset(); document.getElementById("formSection").classList.remove("edit-mode"); document.getElementById("formTitle").innerText = "➕ 新增維修/校正紀錄"; document.getElementById("submitBtn").innerText = "儲存並同步至雲端"; document.getElementById("submitBtn").classList.remove("edit-active"); document.getElementById("cancelEditBtn").style.display = "none"; document.getElementById("customTask").style.display = "none"; document.getElementById("customEngineer").style.display = "none"; initFormDate(); 
+        currentEditingId = null; document.getElementById("recordForm").reset(); document.getElementById("formSection").classList.remove("edit-mode"); 
+        document.getElementById("formTitle").innerText = "➕ 新增維修/校正紀錄"; document.getElementById("submitBtn").innerText = "儲存並同步至雲端"; document.getElementById("submitBtn").classList.remove("edit-active"); 
+        document.getElementById("cancelEditBtn").style.display = "none"; document.getElementById("customTask").style.display = "none"; document.getElementById("customEngineer").style.display = "none"; 
+        initFormDate(); 
     }
 
     window.handleFormSubmit = async function(event) {
         event.preventDefault();
+        
         let finalTask = document.getElementById("inputTask").value; if (finalTask === "其他") finalTask = document.getElementById("customTask").value.trim();
         let finalEngineer = document.getElementById("inputEngineer").value; if (finalEngineer === "其他") finalEngineer = document.getElementById("customEngineer").value.trim();
-
+        
         const recordData = {
             date: document.getElementById("inputDate").value, customer: document.getElementById("inputCustomer").value.trim(), serial: document.getElementById("inputSerial").value.trim(),
             task: finalTask, engineer: finalEngineer, status: document.getElementById("inputStatus").value, remarks: document.getElementById("inputRemarks").value.trim()
@@ -769,7 +750,6 @@
         if (keyword !== "") { currentDisplayData = database.filter(record => (record.customer && record.customer.toLowerCase().includes(keyword)) || (record.serial && record.serial.toLowerCase().includes(keyword))); } else { currentDisplayData = [...database]; }
         currentPage = 1; currentDisplayData = applySort(currentDisplayData); renderTableAndPagination();
     }
-
     window.resetSearch = function() { document.getElementById("searchInput").value = ""; searchRecords(); }
 
     /* ================== 帳號管理 ================== */
