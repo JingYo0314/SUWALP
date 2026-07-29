@@ -153,6 +153,11 @@
             <h3>主機管理</h3>
             <p>儀器校正與維修病歷紀錄</p>
         </div>
+        <div class="dashboard-card" onclick="goToApp('bidApp')">
+            <div class="dashboard-icon">📁</div>
+            <h3>標案管理</h3>
+            <p>管理歷史標案與得標資訊</p>
+        </div>
         <div class="dashboard-card hidden" id="dashboardUserBtn" onclick="goToApp('userManagementApp')">
             <div class="dashboard-icon">⚙️</div>
             <h3>系統帳號管理</h3>
@@ -321,7 +326,82 @@
     <div id="statsFooter" class="footer-stats">目前此系統累積有 0 間客戶，0 台儀器</div>
 </div>
 
-<!-- ================= 模組 3：帳號管理 ================= -->
+<!-- ================= 模組 4：標案管理系統 ================= -->
+<div class="container hidden" id="bidApp">
+    <div class="header-section">
+        <h1 onclick="goToApp('dashboardApp')" title="點擊回到主選單">📁 標案管理模組</h1>
+        <div class="user-controls">
+            <button class="btn btn-nav" onclick="goToApp('dashboardApp')">🏠 回主選單</button>
+        </div>
+    </div>
+    
+    <div id="bidFormSection" class="form-section">
+        <h2 class="form-title" id="bidFormTitle">➕ 新增標案資料</h2>
+        <form id="bidForm" onsubmit="handleBidSubmit(event)">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>客戶及單位名稱</label>
+                    <input type="text" id="bidCustomer" placeholder="例如：環保局" required>
+                </div>
+                <div class="form-group">
+                    <label>標案名稱</label>
+                    <input type="text" id="bidName" placeholder="例如：112年度採購案" required>
+                </div>
+                <div class="form-group">
+                    <label>標案案號</label>
+                    <input type="text" id="bidNumber" placeholder="例如：A112001" required>
+                </div>
+            </div>
+            
+            <div class="form-grid">
+                <div class="form-group" style="grid-column: span 2;">
+                    <label>標案內容</label>
+                    <input type="text" id="bidContent" placeholder="簡述標案提供之設備或服務..." required>
+                </div>
+                <div class="form-group">
+                    <label>得標價格</label>
+                    <input type="text" id="bidPrice" placeholder="例如：850,000" required>
+                </div>
+            </div>
+            
+            <div class="form-grid" style="grid-template-columns: 1fr;">
+                <div class="form-group">
+                    <label>備註</label>
+                    <input type="text" id="bidRemarks" placeholder="選填備註事項...">
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" id="bidSubmitBtn" class="btn btn-submit">儲存標案資料</button>
+                <button type="button" id="bidCancelEditBtn" class="btn btn-cancel" onclick="resetBidForm()">取消編輯</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="search-section">
+        <input type="text" id="searchBidInput" class="search-input" placeholder="輸入「客戶及單位名稱」或「標案案號」搜尋..." oninput="searchBids()">
+        <button class="btn btn-secondary" onclick="resetBidSearch()">清除搜尋</button>
+    </div>
+
+    <table>
+        <thead>
+            <tr id="bidTableHeaderRow">
+                <th>客戶及單位名稱</th>
+                <th>標案名稱</th>
+                <th>標案案號</th>
+                <th>標案內容</th>
+                <th>得標價格</th>
+                <th>備註</th>
+                <th id="bidActionHeader" style="min-width: 90px;">操作</th>
+            </tr>
+        </thead>
+        <tbody id="bidTableBody"><tr><td colspan="7" class="no-data">☁️ 雲端資料庫連線中...</td></tr></tbody>
+    </table>
+    <div id="bidPagination" class="pagination"></div>
+</div>
+
+
+<!-- ================= 模組 5：帳號管理 ================= -->
 <div class="container hidden" id="userManagementApp">
     <div class="header-section">
         <h2>⚙️ 系統帳號權限管理</h2>
@@ -378,16 +458,20 @@
     const recordsCol = collection(db, "instrument_records"); 
     const usersCol = collection(db, "users");
     const customersCol = collection(db, "customers"); 
+    const bidsCol = collection(db, "bids"); // 標案管理資料庫
 
     let loggedInUser = null; 
     let database = []; let currentDisplayData = []; 
     let usersDatabase = []; let customersDatabase = [];
+    let bidsDatabase = []; let currentBidDisplayData = [];
     
     let currentEditingId = null; 
     let currentUserEditingId = null;
     let currentCustEditingId = null;
+    let currentBidEditingId = null;
 
     let currentPage = 1;
+    let currentBidPage = 1;
     const itemsPerPage = 10; 
     let currentSortColumn = 'date';
     let isDescending = true;
@@ -405,11 +489,14 @@
         document.getElementById("dashboardApp").classList.add("hidden");
         document.getElementById("mainApp").classList.add("hidden");
         document.getElementById("customerApp").classList.add("hidden");
+        document.getElementById("bidApp").classList.add("hidden");
         document.getElementById("userManagementApp").classList.add("hidden");
+        
         document.getElementById(appId).classList.remove("hidden");
         
         if(appId === 'mainApp') { resetFormState(); renderTableAndPagination(); }
         if(appId === 'customerApp') { resetCustomerForm(); renderCustomerTable(); }
+        if(appId === 'bidApp') { resetBidForm(); renderBidTable(); }
     }
 
     window.handleLogin = async function(event) {
@@ -441,6 +528,7 @@
         document.getElementById("dashboardApp").classList.add("hidden");
         document.getElementById("mainApp").classList.add("hidden");
         document.getElementById("customerApp").classList.add("hidden");
+        document.getElementById("bidApp").classList.add("hidden");
         document.getElementById("userManagementApp").classList.add("hidden");
         document.getElementById("loginSection").classList.remove("hidden");
         document.getElementById("loginUsername").value = "";
@@ -454,9 +542,11 @@
         if (loggedInUser.role === 3) {
             document.getElementById("formSection").classList.add("hidden");
             document.getElementById("customerFormSection").classList.add("hidden");
+            document.getElementById("bidFormSection").classList.add("hidden");
         } else {
             document.getElementById("formSection").classList.remove("hidden");
             document.getElementById("customerFormSection").classList.remove("hidden");
+            document.getElementById("bidFormSection").classList.remove("hidden");
         }
 
         const headerRow = document.getElementById("tableHeaderRow");
@@ -464,6 +554,14 @@
         if (loggedInUser.role !== 3) {
             const th = document.createElement("th"); th.id = "actionHeader"; th.style.minWidth = "90px"; th.innerText = "操作";
             headerRow.appendChild(th);
+        }
+        
+        // 標案管理的權限處理
+        const bidHeaderRow = document.getElementById("bidTableHeaderRow");
+        if(document.getElementById("bidActionHeader")) document.getElementById("bidActionHeader").remove();
+        if (loggedInUser.role !== 3) {
+            const th = document.createElement("th"); th.id = "bidActionHeader"; th.style.minWidth = "90px"; th.innerText = "操作";
+            bidHeaderRow.appendChild(th);
         }
     }
 
@@ -478,6 +576,12 @@
             customersDatabase = [];
             snapshot.forEach((doc) => { customersDatabase.push({ id: doc.id, ...doc.data() }); });
             renderCustomerTable();
+        });
+        
+        onSnapshot(bidsCol, (snapshot) => {
+            bidsDatabase = [];
+            snapshot.forEach((doc) => { bidsDatabase.push({ id: doc.id, ...doc.data() }); });
+            searchBids();
         });
 
         if (loggedInUser.role === 1) {
@@ -584,6 +688,123 @@
         document.getElementById("searchInput").value = serial;
         searchRecords();
     }
+
+
+    /* ================== 標案管理 ================== */
+    window.handleBidSubmit = async function(event) {
+        event.preventDefault();
+        const bidData = {
+            customer: document.getElementById("bidCustomer").value.trim(),
+            name: document.getElementById("bidName").value.trim(),
+            number: document.getElementById("bidNumber").value.trim(),
+            content: document.getElementById("bidContent").value.trim(),
+            price: document.getElementById("bidPrice").value.trim(),
+            remarks: document.getElementById("bidRemarks").value.trim()
+        };
+
+        try {
+            if (currentBidEditingId) { await updateDoc(doc(db, "bids", currentBidEditingId), bidData); alert("✅ 標案更新成功！"); } 
+            else { await addDoc(bidsCol, bidData); alert("🎉 新標案建立成功！"); currentBidPage = 1; }
+            resetBidForm();
+        } catch (e) { alert("❌ 儲存失敗：" + e); }
+    }
+
+    window.renderBidTable = function() {
+        const tbody = document.getElementById("bidTableBody"); tbody.innerHTML = "";
+        
+        if (currentBidDisplayData.length === 0) {
+            const colSpan = loggedInUser && loggedInUser.role === 3 ? 6 : 7;
+            tbody.innerHTML = `<tr><td colspan="${colSpan}" class="no-data">📭 目前沒有符合條件的標案</td></tr>`;
+            document.getElementById("bidPagination").innerHTML = ""; return;
+        }
+
+        const totalPages = Math.ceil(currentBidDisplayData.length / itemsPerPage);
+        if (currentBidPage > totalPages) currentBidPage = totalPages; 
+        const startIndex = (currentBidPage - 1) * itemsPerPage;
+        const paginatedData = currentBidDisplayData.slice(startIndex, startIndex + itemsPerPage);
+
+        paginatedData.forEach(bid => {
+            let actionHtml = '';
+            if (loggedInUser && loggedInUser.role !== 3) {
+                actionHtml = `<td>
+                    <button class="btn btn-sm btn-edit" onclick="editBid('${bid.id}')">編輯</button>
+                    <button class="btn btn-sm btn-danger" onclick="deleteBid('${bid.id}')">刪除</button>
+                </td>`;
+            }
+            
+            tbody.innerHTML += `<tr>
+                <td><strong>${bid.customer}</strong></td>
+                <td>${bid.name}</td>
+                <td><code>${bid.number}</code></td>
+                <td>${bid.content}</td>
+                <td style="color:#27ae60; font-weight:bold;">${bid.price}</td>
+                <td><span style="color:#555; font-size:13px;">${bid.remarks || ""}</span></td>
+                ${actionHtml}
+            </tr>`;
+        });
+        
+        renderBidPaginationButtons(totalPages);
+    }
+    
+    function renderBidPaginationButtons(totalPages) {
+        const paginationDiv = document.getElementById("bidPagination"); paginationDiv.innerHTML = "";
+        if (totalPages <= 1) return; 
+
+        const prevBtn = document.createElement("button"); prevBtn.innerText = "上一頁"; prevBtn.className = "page-btn"; prevBtn.disabled = (currentBidPage === 1);
+        prevBtn.onclick = () => { if (currentBidPage > 1) { currentBidPage--; renderBidTable(); } };
+        paginationDiv.appendChild(prevBtn);
+
+        let pageNumbers = [];
+        for (let i = 1; i <= totalPages; i++) { if (i <= 3 || i >= totalPages - 1 || (i >= currentBidPage - 1 && i <= currentBidPage + 1)) pageNumbers.push(i); }
+        pageNumbers = [...new Set(pageNumbers)].sort((a, b) => a - b);
+
+        let lastPage = 0;
+        pageNumbers.forEach(p => {
+            if (lastPage && p - lastPage > 1) {
+                const dots = document.createElement("span"); dots.innerText = "........"; dots.style.margin = "0 8px"; dots.style.color = "#94a3b8"; dots.style.fontWeight = "bold"; paginationDiv.appendChild(dots);
+            }
+            const pageBtn = document.createElement("button"); pageBtn.innerText = p; pageBtn.className = (p === currentBidPage) ? "page-btn active" : "page-btn";
+            pageBtn.onclick = () => { currentBidPage = p; renderBidTable(); }; paginationDiv.appendChild(pageBtn);
+            lastPage = p;
+        });
+
+        const nextBtn = document.createElement("button"); nextBtn.innerText = "下一頁"; nextBtn.className = "page-btn"; nextBtn.disabled = (currentBidPage === totalPages);
+        nextBtn.onclick = () => { if (currentBidPage < totalPages) { currentBidPage++; renderBidTable(); } };
+        paginationDiv.appendChild(nextBtn);
+    }
+    
+    window.editBid = function(id) {
+        const bid = bidsDatabase.find(b => b.id === id); if(!bid) return;
+        currentBidEditingId = id;
+        document.getElementById("bidFormSection").classList.add("edit-mode"); document.getElementById("bidFormTitle").innerText = "✏️ 編輯標案資料";
+        document.getElementById("bidSubmitBtn").innerText = "💾 更新標案資料"; document.getElementById("bidSubmitBtn").classList.add("edit-active"); document.getElementById("bidCancelEditBtn").style.display = "block";
+        document.getElementById("bidCustomer").value = bid.customer; document.getElementById("bidName").value = bid.name; 
+        document.getElementById("bidNumber").value = bid.number; document.getElementById("bidContent").value = bid.content;
+        document.getElementById("bidPrice").value = bid.price; document.getElementById("bidRemarks").value = bid.remarks || "";
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    window.deleteBid = async function(id) {
+        if (confirm("⚠️ 確定要刪除此標案紀錄嗎？確認後無法復原。")) { try { await deleteDoc(doc(db, "bids", id)); } catch (e) { alert("❌ 刪除失敗：" + e); } }
+    }
+
+    window.resetBidForm = function() {
+        currentBidEditingId = null; document.getElementById("bidForm").reset();
+        document.getElementById("bidFormSection").classList.remove("edit-mode"); document.getElementById("bidFormTitle").innerText = "➕ 新增標案資料";
+        document.getElementById("bidSubmitBtn").innerText = "儲存標案資料"; document.getElementById("bidSubmitBtn").classList.remove("edit-active"); document.getElementById("bidCancelEditBtn").style.display = "none";
+    }
+
+    window.searchBids = function() {
+        const keyword = document.getElementById("searchBidInput").value.trim().toLowerCase();
+        if (keyword !== "") { 
+            currentBidDisplayData = bidsDatabase.filter(bid => 
+                (bid.customer && bid.customer.toLowerCase().includes(keyword)) || 
+                (bid.number && bid.number.toLowerCase().includes(keyword))
+            ); 
+        } else { currentBidDisplayData = [...bidsDatabase]; }
+        currentBidPage = 1; renderBidTable();
+    }
+    window.resetBidSearch = function() { document.getElementById("searchBidInput").value = ""; searchBids(); }
 
 
     /* ================== 主機管理 ================== */
