@@ -280,7 +280,7 @@
                         <option value="Krain">2. Krain</option>
                         <option value="其他">3. 其他</option>
                     </select>
-                    <input type="text" id="customEngineer" class="custom-input" placeholder="請手動輸入...">
+                    <input type="text" id="customEngineer" class="custom-input" placeholder="請手手動輸入...">
                 </div>
                 <div class="form-group">
                     <label>案件狀態</label>
@@ -338,18 +338,30 @@
     <div id="bidFormSection" class="form-section">
         <h2 class="form-title" id="bidFormTitle">➕ 新增標案資料</h2>
         <form id="bidForm" onsubmit="handleBidSubmit(event)">
+            <!-- 🌟 加入了公告日期與決標日期 -->
             <div class="form-grid">
+                <div class="form-group">
+                    <label>公告日期</label>
+                    <input type="date" id="bidAnnounceDate" required>
+                </div>
+                <div class="form-group">
+                    <label>決標日期</label>
+                    <input type="date" id="bidAwardDate" required>
+                </div>
                 <div class="form-group">
                     <label>客戶及單位名稱</label>
                     <input type="text" id="bidCustomer" placeholder="例如：環保局" required>
                 </div>
-                <div class="form-group">
-                    <label>標案名稱</label>
-                    <input type="text" id="bidName" placeholder="例如：112年度採購案" required>
-                </div>
+            </div>
+            
+            <div class="form-grid">
                 <div class="form-group">
                     <label>標案案號</label>
                     <input type="text" id="bidNumber" placeholder="例如：A112001" required>
+                </div>
+                <div class="form-group" style="grid-column: span 2;">
+                    <label>標案名稱</label>
+                    <input type="text" id="bidName" placeholder="例如：112年度採購案" required>
                 </div>
             </div>
             
@@ -386,6 +398,8 @@
     <table>
         <thead>
             <tr id="bidTableHeaderRow">
+                <th>公告日期</th>
+                <th>決標日期</th>
                 <th>客戶及單位名稱</th>
                 <th>標案名稱</th>
                 <th>標案案號</th>
@@ -395,7 +409,7 @@
                 <th id="bidActionHeader" style="min-width: 90px;">操作</th>
             </tr>
         </thead>
-        <tbody id="bidTableBody"><tr><td colspan="7" class="no-data">☁️ 雲端資料庫連線中...</td></tr></tbody>
+        <tbody id="bidTableBody"><tr><td colspan="9" class="no-data">☁️ 雲端資料庫連線中...</td></tr></tbody>
     </table>
     <div id="bidPagination" class="pagination"></div>
 </div>
@@ -681,7 +695,6 @@
     }
     window.closeModal = function() { document.getElementById("instrumentModal").style.display = "none"; }
 
-    // ✨ 專屬跳轉與過濾函數
     window.goToHostManagementWithSerial = function(serial) {
         closeModal();
         goToApp('mainApp');
@@ -694,6 +707,8 @@
     window.handleBidSubmit = async function(event) {
         event.preventDefault();
         const bidData = {
+            announceDate: document.getElementById("bidAnnounceDate").value,
+            awardDate: document.getElementById("bidAwardDate").value,
             customer: document.getElementById("bidCustomer").value.trim(),
             name: document.getElementById("bidName").value.trim(),
             number: document.getElementById("bidNumber").value.trim(),
@@ -713,7 +728,7 @@
         const tbody = document.getElementById("bidTableBody"); tbody.innerHTML = "";
         
         if (currentBidDisplayData.length === 0) {
-            const colSpan = loggedInUser && loggedInUser.role === 3 ? 6 : 7;
+            const colSpan = loggedInUser && loggedInUser.role === 3 ? 8 : 9;
             tbody.innerHTML = `<tr><td colspan="${colSpan}" class="no-data">📭 目前沒有符合條件的標案</td></tr>`;
             document.getElementById("bidPagination").innerHTML = ""; return;
         }
@@ -733,6 +748,8 @@
             }
             
             tbody.innerHTML += `<tr>
+                <td><strong>${bid.announceDate || "-"}</strong></td>
+                <td><strong>${bid.awardDate || "-"}</strong></td>
                 <td><strong>${bid.customer}</strong></td>
                 <td>${bid.name}</td>
                 <td><code>${bid.number}</code></td>
@@ -778,9 +795,16 @@
         currentBidEditingId = id;
         document.getElementById("bidFormSection").classList.add("edit-mode"); document.getElementById("bidFormTitle").innerText = "✏️ 編輯標案資料";
         document.getElementById("bidSubmitBtn").innerText = "💾 更新標案資料"; document.getElementById("bidSubmitBtn").classList.add("edit-active"); document.getElementById("bidCancelEditBtn").style.display = "block";
-        document.getElementById("bidCustomer").value = bid.customer; document.getElementById("bidName").value = bid.name; 
-        document.getElementById("bidNumber").value = bid.number; document.getElementById("bidContent").value = bid.content;
-        document.getElementById("bidPrice").value = bid.price; document.getElementById("bidRemarks").value = bid.remarks || "";
+        
+        document.getElementById("bidAnnounceDate").value = bid.announceDate || ""; 
+        document.getElementById("bidAwardDate").value = bid.awardDate || "";
+        document.getElementById("bidCustomer").value = bid.customer; 
+        document.getElementById("bidName").value = bid.name; 
+        document.getElementById("bidNumber").value = bid.number; 
+        document.getElementById("bidContent").value = bid.content;
+        document.getElementById("bidPrice").value = bid.price; 
+        document.getElementById("bidRemarks").value = bid.remarks || "";
+        
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
