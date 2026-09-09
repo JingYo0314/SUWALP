@@ -338,7 +338,6 @@
     <div id="bidFormSection" class="form-section">
         <h2 class="form-title" id="bidFormTitle">➕ 新增標案資料</h2>
         <form id="bidForm" onsubmit="handleBidSubmit(event)">
-            <!-- 🌟 加入了公告日期與決標日期 -->
             <div class="form-grid">
                 <div class="form-group">
                     <label>公告日期</label>
@@ -398,8 +397,9 @@
     <table>
         <thead>
             <tr id="bidTableHeaderRow">
-                <th>公告日期</th>
-                <th>決標日期</th>
+                <!-- 🌟 在表頭加入 sortable 樣式與 onClick 事件 -->
+                <th class="sortable" onclick="handleBidSort('announceDate')">公告日期 <span id="sort-bid-announceDate" class="sort-icon sort-active">⬇️</span></th>
+                <th class="sortable" onclick="handleBidSort('awardDate')">決標日期 <span id="sort-bid-awardDate" class="sort-icon">↕️</span></th>
                 <th>客戶及單位名稱</th>
                 <th>標案名稱</th>
                 <th>標案案號</th>
@@ -472,7 +472,7 @@
     const recordsCol = collection(db, "instrument_records"); 
     const usersCol = collection(db, "users");
     const customersCol = collection(db, "customers"); 
-    const bidsCol = collection(db, "bids"); // 標案管理資料庫
+    const bidsCol = collection(db, "bids"); 
 
     let loggedInUser = null; 
     let database = []; let currentDisplayData = []; 
@@ -489,6 +489,10 @@
     const itemsPerPage = 10; 
     let currentSortColumn = 'date';
     let isDescending = true;
+    
+    // 🌟 新增：標案管理的排序狀態參數
+    let currentBidSortColumn = 'announceDate';
+    let isBidDescending = true;
 
     async function initSystemAuth() {
         const q = query(usersCol, where("username", "==", "Gary"));
@@ -570,7 +574,6 @@
             headerRow.appendChild(th);
         }
         
-        // 標案管理的權限處理
         const bidHeaderRow = document.getElementById("bidTableHeaderRow");
         if(document.getElementById("bidActionHeader")) document.getElementById("bidActionHeader").remove();
         if (loggedInUser.role !== 3) {
@@ -592,6 +595,7 @@
             renderCustomerTable();
         });
         
+        // 🌟 標案資料獲取時自動觸發搜尋與排序
         onSnapshot(bidsCol, (snapshot) => {
             bidsDatabase = [];
             snapshot.forEach((doc) => { bidsDatabase.push({ id: doc.id, ...doc.data() }); });
@@ -678,7 +682,6 @@
         document.getElementById("contactContainer").innerHTML = ""; window.addContactRow();
     }
 
-    // ✨ 點擊彈窗按鈕，帶參數自動跳轉並搜尋
     window.viewCustomerInstruments = function(customerName) {
         const matchedRecords = database.filter(r => r.customer === customerName);
         const uniqueSerials = [...new Set(matchedRecords.map(r => r.serial))].filter(Boolean);
@@ -704,6 +707,46 @@
 
 
     /* ================== 標案管理 ================== */
+    
+    // 🌟 新增：處理標案表格的點擊排序邏輯
+    window.handleBidSort = function(column) {
+        if (currentBidSortColumn === column) {
+            isBidDescending = !isBidDescending;
+        } else {
+            currentBidSortColumn = column;
+            isBidDescending = true; // 預設切換欄位時從最新/最大開始排
+        }
+        updateBidSortIcons();
+        currentBidPage = 1;
+        currentBidDisplayData = applyBidSort(currentBidDisplayData);
+        renderBidTable();
+    }
+
+    function updateBidSortIcons() {
+        ['announceDate', 'awardDate'].forEach(id => {
+            const el = document.getElementById(`sort-bid-${id}`);
+            if (el) {
+                if (id === currentBidSortColumn) {
+                    el.innerText = isBidDescending ? "⬇️" : "⬆️";
+                    el.classList.add("sort-active");
+                } else {
+                    el.innerText = "↕️";
+                    el.classList.remove("sort-active");
+                }
+            }
+        });
+    }
+
+    function applyBidSort(dataArray) {
+        return dataArray.sort((a, b) => {
+            let valA = a[currentBidSortColumn] || "";
+            let valB = b[currentBidSortColumn] || "";
+            if (valA < valB) return isBidDescending ? 1 : -1;
+            if (valA > valB) return isBidDescending ? -1 : 1;
+            return 0;
+        });
+    }
+
     window.handleBidSubmit = async function(event) {
         event.preventDefault();
         const bidData = {
@@ -826,7 +869,10 @@
                 (bid.number && bid.number.toLowerCase().includes(keyword))
             ); 
         } else { currentBidDisplayData = [...bidsDatabase]; }
-        currentBidPage = 1; renderBidTable();
+        currentBidPage = 1; 
+        // 🌟 每次搜尋完後，套用目前的排序狀態
+        currentBidDisplayData = applyBidSort(currentBidDisplayData);
+        renderBidTable();
     }
     window.resetBidSearch = function() { document.getElementById("searchBidInput").value = ""; searchBids(); }
 
