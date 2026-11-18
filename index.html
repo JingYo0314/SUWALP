@@ -268,7 +268,6 @@
                         <option value="更換點火器">5. 更換點火器</option>
                         <option value="韌體更新">6. 韌體更新</option>
                         <option value="新機出貨">7. 新機出貨</option>
-                        <!-- 🌟 新增選項 8，並把其他移到 9 -->
                         <option value="召回，無異常">8. 召回，無異常</option>
                         <option value="其他">9. 其他 (自行輸入)</option>
                     </select>
@@ -282,7 +281,7 @@
                         <option value="Krain">2. Krain</option>
                         <option value="其他">3. 其他</option>
                     </select>
-                    <input type="text" id="customEngineer" class="custom-input" placeholder="請手手動輸入...">
+                    <input type="text" id="customEngineer" class="custom-input" placeholder="請手動輸入...">
                 </div>
                 <div class="form-group">
                     <label>案件狀態</label>
@@ -449,7 +448,7 @@
         <tbody id="userTableBody"></tbody>
     </table>
 
-    <!-- 🌟 新增：歷史登入紀錄區塊 -->
+    <!-- 歷史登入紀錄區塊 -->
     <hr style="margin: 40px 0; border: 1px solid #e2e8f0;">
     <h3 class="form-title" style="border-left-color: #8e44ad;">📜 歷史登入紀錄 (最近 100 筆)</h3>
     <table>
@@ -470,16 +469,16 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getFirestore, collection, addDoc, deleteDoc, doc, updateDoc, onSnapshot, query, where, getDocs, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-    // 🔴 ⚠️ 記得將這裡替換成你專屬的 Firebase 金鑰 ⚠️ 🔴
+    // 使用你專屬的 Firebase 金鑰
     const firebaseConfig = {
         apiKey: "AIzaSyBccKaB3yjh7anO2KhK2XsPiwnoEDYAss8",
-  authDomain: "tva2020.firebaseapp.com",
-  databaseURL: "https://tva2020-default-rtdb.firebaseio.com",
-  projectId: "tva2020",
-  storageBucket: "tva2020.firebasestorage.app",
-  messagingSenderId: "309634484442",
-  appId: "1:309634484442:web:d31941cfef811f73a63de3",
-  measurementId: "G-ZSCF0Y3N5Z"
+        authDomain: "tva2020.firebaseapp.com",
+        databaseURL: "https://tva2020-default-rtdb.firebaseio.com",
+        projectId: "tva2020",
+        storageBucket: "tva2020.firebasestorage.app",
+        messagingSenderId: "309634484442",
+        appId: "1:309634484442:web:d31941cfef811f73a63de3",
+        measurementId: "G-ZSCF0Y3N5Z"
     };
 
     const app = initializeApp(firebaseConfig);
@@ -489,13 +488,13 @@
     const usersCol = collection(db, "users");
     const customersCol = collection(db, "customers"); 
     const bidsCol = collection(db, "bids"); 
-    const logsCol = collection(db, "login_logs"); // 🌟 歷史紀錄資料庫
+    const logsCol = collection(db, "login_logs"); 
 
     let loggedInUser = null; 
     let database = []; let currentDisplayData = []; 
     let usersDatabase = []; let customersDatabase = [];
     let bidsDatabase = []; let currentBidDisplayData = [];
-    let logsDatabase = []; // 🌟 歷史紀錄陣列
+    let logsDatabase = []; 
     
     let currentEditingId = null; 
     let currentUserEditingId = null;
@@ -546,7 +545,6 @@
             const userData = snapshot.docs[0].data();
             loggedInUser = { id: snapshot.docs[0].id, username: userData.username, role: Number(userData.role) };
             
-            // 🌟 登入成功時，背景寫入歷史登入紀錄
             const now = new Date();
             const pad = (n) => n.toString().padStart(2, '0');
             const timeStr = `${now.getFullYear()}/${pad(now.getMonth()+1)}/${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}`;
@@ -629,7 +627,6 @@
             searchBids();
         });
 
-        // 最高權限才會去抓取這兩個資料庫
         if (loggedInUser.role === 1) {
             onSnapshot(usersCol, (snapshot) => {
                 usersDatabase = [];
@@ -637,7 +634,6 @@
                 renderUserTable();
             });
 
-            // 🌟 監聽歷史登入紀錄
             onSnapshot(logsCol, (snapshot) => {
                 logsDatabase = [];
                 snapshot.forEach((doc) => { logsDatabase.push({ id: doc.id, ...doc.data() }); });
@@ -662,4 +658,473 @@
         const address = document.getElementById("custAddress").value.trim();
         const contacts = [];
         document.querySelectorAll('.contact-row').forEach(row => {
-            const cName = row.querySelector('.contact-name').value.trim
+            const cName = row.querySelector('.contact-name').value.trim();
+            const cPhone = row.querySelector('.contact-phone').value.trim();
+            if (cName || cPhone) contacts.push({ name: cName, phone: cPhone });
+        });
+        const custData = { name, address, contacts };
+        try {
+            if (currentCustEditingId) { await updateDoc(doc(db, "customers", currentCustEditingId), custData); alert("✅ 客戶資料更新成功！"); } 
+            else { await addDoc(customersCol, custData); alert("🎉 新客戶建立成功！"); }
+            resetCustomerForm();
+        } catch (e) { alert("❌ 儲存失敗：" + e); }
+    }
+
+    window.renderCustomerTable = function() {
+        const tbody = document.getElementById("customerTableBody"); tbody.innerHTML = "";
+        const keyword = document.getElementById("searchCustInput").value.trim().toLowerCase();
+        let displayData = customersDatabase;
+        if (keyword) displayData = displayData.filter(c => c.name.toLowerCase().includes(keyword));
+        if(displayData.length === 0){ tbody.innerHTML = `<tr><td colspan="4" class="no-data">找不到客戶資料</td></tr>`; return; }
+
+        displayData.forEach(cust => {
+            let contactsHtml = cust.contacts && cust.contacts.length > 0 ? cust.contacts.map(c => `<div>👤 ${c.name} : ${c.phone}</div>`).join("") : '<span style="color:#aaa;">無資料</span>';
+            let actionHtml = `<button class="btn btn-sm btn-success" onclick="viewCustomerInstruments('${cust.name}')">🔍 查看名下主機</button>`;
+            
+            if(loggedInUser && loggedInUser.role !== 3) {
+                actionHtml += ` <button class="btn btn-sm btn-edit" onclick="editCustomer('${cust.id}')">編輯</button>
+                                <button class="btn btn-sm btn-danger" onclick="deleteCustomer('${cust.id}')">刪除</button>`;
+            }
+            tbody.innerHTML += `<tr><td><strong>${cust.name}</strong></td><td>${cust.address}</td><td>${contactsHtml}</td><td>${actionHtml}</td></tr>`;
+        });
+    }
+
+    window.editCustomer = function(id) {
+        const cust = customersDatabase.find(c => c.id === id); if(!cust) return;
+        currentCustEditingId = id;
+        document.getElementById("customerFormSection").classList.add("edit-mode"); document.getElementById("custFormTitle").innerText = "✏️ 編輯客戶資料";
+        document.getElementById("custSubmitBtn").innerText = "💾 更新客戶資料"; document.getElementById("custSubmitBtn").classList.add("edit-active"); document.getElementById("custCancelEditBtn").style.display = "block";
+        document.getElementById("custName").value = cust.name; document.getElementById("custAddress").value = cust.address;
+
+        const container = document.getElementById("contactContainer"); container.innerHTML = ""; 
+        if(cust.contacts && cust.contacts.length > 0) { cust.contacts.forEach(c => window.addContactRow(c.name, c.phone)); } 
+        else { window.addContactRow(); }
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    window.deleteCustomer = async function(id) {
+        if (confirm("⚠️ 確定要刪除此客戶嗎？")) { try { await deleteDoc(doc(db, "customers", id)); } catch (e) { alert("❌ 刪除失敗：" + e); } }
+    }
+
+    window.resetCustomerForm = function() {
+        currentCustEditingId = null; document.getElementById("customerForm").reset();
+        document.getElementById("customerFormSection").classList.remove("edit-mode"); document.getElementById("custFormTitle").innerText = "➕ 新增客戶資料";
+        document.getElementById("custSubmitBtn").innerText = "儲存客戶資料"; document.getElementById("custSubmitBtn").classList.remove("edit-active"); document.getElementById("custCancelEditBtn").style.display = "none";
+        document.getElementById("contactContainer").innerHTML = ""; window.addContactRow();
+    }
+
+    window.viewCustomerInstruments = function(customerName) {
+        const matchedRecords = database.filter(r => r.customer === customerName);
+        const uniqueSerials = [...new Set(matchedRecords.map(r => r.serial))].filter(Boolean);
+        document.getElementById("modalTitle").innerText = `🏢 ${customerName} 名下主機序號`;
+        const modalBody = document.getElementById("modalBody");
+        if(uniqueSerials.length === 0) { 
+            modalBody.innerHTML = `<p style="color:#7f8c8d;">此客戶目前沒有登記任何主機紀錄。</p>`; 
+        } else { 
+            modalBody.innerHTML = uniqueSerials.map(s => 
+                `<span class="instrument-badge" title="點擊查詢歷史紀錄" onclick="goToHostManagementWithSerial('${s}')">📌 ${s} </span>`
+            ).join(" "); 
+        }
+        document.getElementById("instrumentModal").style.display = "flex";
+    }
+    window.closeModal = function() { document.getElementById("instrumentModal").style.display = "none"; }
+
+    window.goToHostManagementWithSerial = function(serial) {
+        closeModal();
+        goToApp('mainApp');
+        document.getElementById("searchInput").value = serial;
+        searchRecords();
+    }
+
+
+    /* ================== 標案管理 ================== */
+    window.handleBidSort = function(column) {
+        if (currentBidSortColumn === column) {
+            isBidDescending = !isBidDescending;
+        } else {
+            currentBidSortColumn = column;
+            isBidDescending = true; 
+        }
+        updateBidSortIcons();
+        currentBidPage = 1;
+        currentBidDisplayData = applyBidSort(currentBidDisplayData);
+        renderBidTable();
+    }
+
+    function updateBidSortIcons() {
+        ['announceDate', 'awardDate'].forEach(id => {
+            const el = document.getElementById(`sort-bid-${id}`);
+            if (el) {
+                if (id === currentBidSortColumn) {
+                    el.innerText = isBidDescending ? "⬇️" : "⬆️";
+                    el.classList.add("sort-active");
+                } else {
+                    el.innerText = "↕️";
+                    el.classList.remove("sort-active");
+                }
+            }
+        });
+    }
+
+    function applyBidSort(dataArray) {
+        return dataArray.sort((a, b) => {
+            let valA = a[currentBidSortColumn] || "";
+            let valB = b[currentBidSortColumn] || "";
+            if (valA < valB) return isBidDescending ? 1 : -1;
+            if (valA > valB) return isBidDescending ? -1 : 1;
+            return 0;
+        });
+    }
+
+    window.handleBidSubmit = async function(event) {
+        event.preventDefault();
+        const bidData = {
+            announceDate: document.getElementById("bidAnnounceDate").value,
+            awardDate: document.getElementById("bidAwardDate").value,
+            customer: document.getElementById("bidCustomer").value.trim(),
+            name: document.getElementById("bidName").value.trim(),
+            number: document.getElementById("bidNumber").value.trim(),
+            content: document.getElementById("bidContent").value.trim(),
+            price: document.getElementById("bidPrice").value.trim(),
+            remarks: document.getElementById("bidRemarks").value.trim()
+        };
+
+        try {
+            if (currentBidEditingId) { await updateDoc(doc(db, "bids", currentBidEditingId), bidData); alert("✅ 標案更新成功！"); } 
+            else { await addDoc(bidsCol, bidData); alert("🎉 新標案建立成功！"); currentBidPage = 1; }
+            resetBidForm();
+        } catch (e) { alert("❌ 儲存失敗：" + e); }
+    }
+
+    window.renderBidTable = function() {
+        const tbody = document.getElementById("bidTableBody"); tbody.innerHTML = "";
+        
+        if (currentBidDisplayData.length === 0) {
+            const colSpan = loggedInUser && loggedInUser.role === 3 ? 8 : 9;
+            tbody.innerHTML = `<tr><td colspan="${colSpan}" class="no-data">📭 目前沒有符合條件的標案</td></tr>`;
+            document.getElementById("bidPagination").innerHTML = ""; return;
+        }
+
+        const totalPages = Math.ceil(currentBidDisplayData.length / itemsPerPage);
+        if (currentBidPage > totalPages) currentBidPage = totalPages; 
+        const startIndex = (currentBidPage - 1) * itemsPerPage;
+        const paginatedData = currentBidDisplayData.slice(startIndex, startIndex + itemsPerPage);
+
+        paginatedData.forEach(bid => {
+            let actionHtml = '';
+            if (loggedInUser && loggedInUser.role !== 3) {
+                actionHtml = `<td>
+                    <button class="btn btn-sm btn-edit" onclick="editBid('${bid.id}')">編輯</button>
+                    <button class="btn btn-sm btn-danger" onclick="deleteBid('${bid.id}')">刪除</button>
+                </td>`;
+            }
+            
+            tbody.innerHTML += `<tr>
+                <td><strong>${bid.announceDate || "-"}</strong></td>
+                <td><strong>${bid.awardDate || "-"}</strong></td>
+                <td><strong>${bid.customer}</strong></td>
+                <td>${bid.name}</td>
+                <td><code>${bid.number}</code></td>
+                <td>${bid.content}</td>
+                <td style="color:#27ae60; font-weight:bold;">${bid.price}</td>
+                <td><span style="color:#555; font-size:13px;">${bid.remarks || ""}</span></td>
+                ${actionHtml}
+            </tr>`;
+        });
+        
+        renderBidPaginationButtons(totalPages);
+    }
+    
+    function renderBidPaginationButtons(totalPages) {
+        const paginationDiv = document.getElementById("bidPagination"); paginationDiv.innerHTML = "";
+        if (totalPages <= 1) return; 
+
+        const prevBtn = document.createElement("button"); prevBtn.innerText = "上一頁"; prevBtn.className = "page-btn"; prevBtn.disabled = (currentBidPage === 1);
+        prevBtn.onclick = () => { if (currentBidPage > 1) { currentBidPage--; renderBidTable(); } };
+        paginationDiv.appendChild(prevBtn);
+
+        let pageNumbers = [];
+        for (let i = 1; i <= totalPages; i++) { if (i <= 3 || i >= totalPages - 1 || (i >= currentBidPage - 1 && i <= currentBidPage + 1)) pageNumbers.push(i); }
+        pageNumbers = [...new Set(pageNumbers)].sort((a, b) => a - b);
+
+        let lastPage = 0;
+        pageNumbers.forEach(p => {
+            if (lastPage && p - lastPage > 1) {
+                const dots = document.createElement("span"); dots.innerText = "........"; dots.style.margin = "0 8px"; dots.style.color = "#94a3b8"; dots.style.fontWeight = "bold"; paginationDiv.appendChild(dots);
+            }
+            const pageBtn = document.createElement("button"); pageBtn.innerText = p; pageBtn.className = (p === currentBidPage) ? "page-btn active" : "page-btn";
+            pageBtn.onclick = () => { currentBidPage = p; renderBidTable(); }; paginationDiv.appendChild(pageBtn);
+            lastPage = p;
+        });
+
+        const nextBtn = document.createElement("button"); nextBtn.innerText = "下一頁"; nextBtn.className = "page-btn"; nextBtn.disabled = (currentBidPage === totalPages);
+        nextBtn.onclick = () => { if (currentBidPage < totalPages) { currentBidPage++; renderBidTable(); } };
+        paginationDiv.appendChild(nextBtn);
+    }
+    
+    window.editBid = function(id) {
+        const bid = bidsDatabase.find(b => b.id === id); if(!bid) return;
+        currentBidEditingId = id;
+        document.getElementById("bidFormSection").classList.add("edit-mode"); document.getElementById("bidFormTitle").innerText = "✏️ 編輯標案資料";
+        document.getElementById("bidSubmitBtn").innerText = "💾 更新標案資料"; document.getElementById("bidSubmitBtn").classList.add("edit-active"); document.getElementById("bidCancelEditBtn").style.display = "block";
+        
+        document.getElementById("bidAnnounceDate").value = bid.announceDate || ""; 
+        document.getElementById("bidAwardDate").value = bid.awardDate || "";
+        document.getElementById("bidCustomer").value = bid.customer; 
+        document.getElementById("bidName").value = bid.name; 
+        document.getElementById("bidNumber").value = bid.number; 
+        document.getElementById("bidContent").value = bid.content;
+        document.getElementById("bidPrice").value = bid.price; 
+        document.getElementById("bidRemarks").value = bid.remarks || "";
+        
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    window.deleteBid = async function(id) {
+        if (confirm("⚠️ 確定要刪除此標案紀錄嗎？確認後無法復原。")) { try { await deleteDoc(doc(db, "bids", id)); } catch (e) { alert("❌ 刪除失敗：" + e); } }
+    }
+
+    window.resetBidForm = function() {
+        currentBidEditingId = null; document.getElementById("bidForm").reset();
+        document.getElementById("bidFormSection").classList.remove("edit-mode"); document.getElementById("bidFormTitle").innerText = "➕ 新增標案資料";
+        document.getElementById("bidSubmitBtn").innerText = "儲存標案資料"; document.getElementById("bidSubmitBtn").classList.remove("edit-active"); document.getElementById("bidCancelEditBtn").style.display = "none";
+    }
+
+    window.searchBids = function() {
+        const keyword = document.getElementById("searchBidInput").value.trim().toLowerCase();
+        if (keyword !== "") { 
+            currentBidDisplayData = bidsDatabase.filter(bid => 
+                (bid.customer && bid.customer.toLowerCase().includes(keyword)) || 
+                (bid.number && bid.number.toLowerCase().includes(keyword))
+            ); 
+        } else { currentBidDisplayData = [...bidsDatabase]; }
+        currentBidPage = 1; 
+        currentBidDisplayData = applyBidSort(currentBidDisplayData);
+        renderBidTable();
+    }
+    window.resetBidSearch = function() { document.getElementById("searchBidInput").value = ""; searchBids(); }
+
+
+    /* ================== 主機管理 ================== */
+    window.autoFillCustomer = function() {
+        const serialInput = document.getElementById("inputSerial").value.trim();
+        if (!serialInput) return;
+        const matchedRecord = database.find(r => r.serial === serialInput);
+        if (matchedRecord && matchedRecord.customer) { document.getElementById("inputCustomer").value = matchedRecord.customer; }
+    }
+
+    function updateDatalists() {
+        const customerList = document.getElementById("customerList"); const serialList = document.getElementById("serialList");
+        const uniqueCustomersHistory = [...new Set(database.map(record => record.customer))];
+        const uniqueCustomersDB = customersDatabase.map(c => c.name);
+        const allCustomers = [...new Set([...uniqueCustomersHistory, ...uniqueCustomersDB])].filter(Boolean);
+        const uniqueSerials = [...new Set(database.map(record => record.serial))].filter(Boolean);
+        customerList.innerHTML = allCustomers.map(c => `<option value="${c}">`).join("");
+        serialList.innerHTML = uniqueSerials.map(s => `<option value="${s}">`).join("");
+    }
+
+    function updateStats() {
+        const uniqueCustomers = new Set(database.map(record => record.customer)).size;
+        const uniqueSerials = new Set(database.map(record => record.serial)).size;
+        document.getElementById("statsFooter").innerText = `目前此系統累積有 ${uniqueCustomers} 間客戶，${uniqueSerials} 台儀器`;
+    }
+
+    function initFormDate() {
+        if (currentEditingId) return; 
+        const now = new Date(); const year = now.getFullYear(); const month = String(now.getMonth() + 1).padStart(2, '0'); const day = String(now.getDate()).padStart(2, '0');
+        document.getElementById("inputDate").value = `${year}-${month}-${day}`;
+    }
+
+    window.toggleCustomInput = function(selectId, customInputId) {
+        const selectBox = document.getElementById(selectId); const customInput = document.getElementById(customInputId);
+        if (selectBox.value === "其他") { customInput.style.display = "block"; customInput.setAttribute("required", "true"); } 
+        else { customInput.style.display = "none"; customInput.removeAttribute("required"); customInput.value = ""; }
+    }
+
+    window.handleSort = function(column) {
+        if (currentSortColumn === column) isDescending = !isDescending;
+        else { currentSortColumn = column; isDescending = (column === 'date') ? true : false; }
+        updateSortIcons(); currentPage = 1; currentDisplayData = applySort(currentDisplayData); renderTableAndPagination();
+    }
+
+    function updateSortIcons() {
+        ['date', 'customer', 'serial'].forEach(id => {
+            const el = document.getElementById(`sort-${id}`);
+            if (el) { el.innerText = isDescending ? "⬇️" : "⬆️"; el.classList.toggle("sort-active", id === currentSortColumn); }
+        });
+    }
+
+    function applySort(dataArray) {
+        return dataArray.sort((a, b) => {
+            let valA = a[currentSortColumn] || ""; let valB = b[currentSortColumn] || "";
+            if (valA < valB) return isDescending ? 1 : -1;
+            if (valA > valB) return isDescending ? -1 : 1; return 0;
+        });
+    }
+
+    function renderTableAndPagination() {
+        const tableBody = document.getElementById("recordTableBody"); tableBody.innerHTML = "";
+        
+        if (currentDisplayData.length === 0) {
+            const colSpan = loggedInUser && loggedInUser.role === 3 ? 7 : 8;
+            tableBody.innerHTML = `<tr><td colspan="${colSpan}" class="no-data">📭 目前沒有符合條件的紀錄</td></tr>`;
+            document.getElementById("pagination").innerHTML = ""; return;
+        }
+
+        const totalPages = Math.ceil(currentDisplayData.length / itemsPerPage);
+        if (currentPage > totalPages) currentPage = totalPages; 
+        const startIndex = (currentPage - 1) * itemsPerPage;
+        const paginatedData = currentDisplayData.slice(startIndex, startIndex + itemsPerPage);
+
+        paginatedData.forEach(record => {
+            const statusClass = record.status.includes("完成") ? "status-done" : "status-wait";
+            let actionHtml = '';
+            if (loggedInUser && loggedInUser.role !== 3) {
+                actionHtml = `<td>
+                    <button class="btn btn-sm btn-edit" onclick="editRecord('${record.id}')">編輯</button>
+                    <button class="btn btn-sm btn-danger" onclick="deleteRecord('${record.id}')">刪除</button>
+                </td>`;
+            }
+            
+            tableBody.innerHTML += `<tr><td><strong>${record.date}</strong></td><td><strong>${record.customer}</strong></td><td><code>${record.serial}</code></td><td>${record.task}</td><td>${record.engineer}</td><td><span class="status-badge ${statusClass}">${record.status}</span></td><td><span style="color:#555; font-size:13px;">${record.remarks || ""}</span></td>${actionHtml}</tr>`;
+        });
+        renderPaginationButtons(totalPages);
+    }
+
+    function renderPaginationButtons(totalPages) {
+        const paginationDiv = document.getElementById("pagination"); paginationDiv.innerHTML = "";
+        if (totalPages <= 1) return; 
+
+        const prevBtn = document.createElement("button"); prevBtn.innerText = "上一頁"; prevBtn.className = "page-btn"; prevBtn.disabled = (currentPage === 1);
+        prevBtn.onclick = () => { if (currentPage > 1) { currentPage--; renderTableAndPagination(); } };
+        paginationDiv.appendChild(prevBtn);
+
+        let pageNumbers = [];
+        for (let i = 1; i <= totalPages; i++) { if (i <= 3 || i >= totalPages - 1 || (i >= currentPage - 1 && i <= currentPage + 1)) pageNumbers.push(i); }
+        pageNumbers = [...new Set(pageNumbers)].sort((a, b) => a - b);
+
+        let lastPage = 0;
+        pageNumbers.forEach(p => {
+            if (lastPage && p - lastPage > 1) {
+                const dots = document.createElement("span"); dots.innerText = "........"; dots.style.margin = "0 8px"; dots.style.color = "#94a3b8"; dots.style.fontWeight = "bold"; paginationDiv.appendChild(dots);
+            }
+            const pageBtn = document.createElement("button"); pageBtn.innerText = p; pageBtn.className = (p === currentPage) ? "page-btn active" : "page-btn";
+            pageBtn.onclick = () => { currentPage = p; renderTableAndPagination(); }; paginationDiv.appendChild(pageBtn);
+            lastPage = p;
+        });
+
+        const nextBtn = document.createElement("button"); nextBtn.innerText = "下一頁"; nextBtn.className = "page-btn"; nextBtn.disabled = (currentPage === totalPages);
+        nextBtn.onclick = () => { if (currentPage < totalPages) { currentPage++; renderTableAndPagination(); } };
+        paginationDiv.appendChild(nextBtn);
+    }
+
+    window.editRecord = function(id) {
+        const record = database.find(r => r.id === id); if (!record) return; currentEditingId = id; 
+        document.getElementById("formSection").classList.add("edit-mode"); document.getElementById("formTitle").innerText = "✏️ 編輯維修/校正紀錄"; 
+        document.getElementById("submitBtn").innerText = "💾 更新並同步至雲端"; document.getElementById("submitBtn").classList.add("edit-active"); document.getElementById("cancelEditBtn").style.display = "block";
+        document.getElementById("inputDate").value = record.date; document.getElementById("inputCustomer").value = record.customer; document.getElementById("inputSerial").value = record.serial; document.getElementById("inputStatus").value = record.status; document.getElementById("inputRemarks").value = record.remarks || "";
+
+        const taskSelect = document.getElementById("inputTask"); const customTaskInput = document.getElementById("customTask");
+        const taskOptions = Array.from(taskSelect.options).map(opt => opt.value);
+        if (taskOptions.includes(record.task)) { taskSelect.value = record.task; customTaskInput.style.display = "none"; } else { taskSelect.value = "其他"; customTaskInput.style.display = "block"; customTaskInput.value = record.task; }
+
+        const engSelect = document.getElementById("inputEngineer"); const customEngInput = document.getElementById("customEngineer");
+        const engOptions = Array.from(engSelect.options).map(opt => opt.value);
+        if (engOptions.includes(record.engineer)) { engSelect.value = record.engineer; customEngInput.style.display = "none"; } else { engSelect.value = "其他"; customEngInput.style.display = "block"; customEngInput.value = record.engineer; }
+        
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    window.resetFormState = function() {
+        currentEditingId = null; document.getElementById("recordForm").reset(); document.getElementById("formSection").classList.remove("edit-mode"); 
+        document.getElementById("formTitle").innerText = "➕ 新增維修/校正紀錄"; document.getElementById("submitBtn").innerText = "儲存並同步至雲端"; document.getElementById("submitBtn").classList.remove("edit-active"); 
+        document.getElementById("cancelEditBtn").style.display = "none"; document.getElementById("customTask").style.display = "none"; document.getElementById("customEngineer").style.display = "none"; 
+        initFormDate(); 
+    }
+
+    window.handleFormSubmit = async function(event) {
+        event.preventDefault();
+        
+        let finalTask = document.getElementById("inputTask").value; if (finalTask === "其他") finalTask = document.getElementById("customTask").value.trim();
+        let finalEngineer = document.getElementById("inputEngineer").value; if (finalEngineer === "其他") finalEngineer = document.getElementById("customEngineer").value.trim();
+        
+        const recordData = {
+            date: document.getElementById("inputDate").value, customer: document.getElementById("inputCustomer").value.trim(), serial: document.getElementById("inputSerial").value.trim(),
+            task: finalTask, engineer: finalEngineer, status: document.getElementById("inputStatus").value, remarks: document.getElementById("inputRemarks").value.trim()
+        };
+
+        try {
+            if (currentEditingId) { await updateDoc(doc(db, "instrument_records", currentEditingId), recordData); alert("✅ 紀錄更新成功！"); } 
+            else { await addDoc(recordsCol, recordData); alert("🎉 資料已成功同步至雲端！"); currentPage = 1; }
+            resetFormState(); 
+        } catch (e) { alert("❌ 儲存失敗，請檢查網路狀態：" + e); }
+    }
+
+    window.deleteRecord = async function(id) {
+        if (confirm("⚠️ 確定要刪除這筆紀錄嗎？確認後無法復原。")) { try { await deleteDoc(doc(db, "instrument_records", id)); } catch (e) { alert("❌ 刪除失敗：" + e); } }
+    }
+
+    window.searchRecords = function() {
+        const keyword = document.getElementById("searchInput").value.trim().toLowerCase();
+        if (keyword !== "") { currentDisplayData = database.filter(record => (record.customer && record.customer.toLowerCase().includes(keyword)) || (record.serial && record.serial.toLowerCase().includes(keyword))); } else { currentDisplayData = [...database]; }
+        currentPage = 1; currentDisplayData = applySort(currentDisplayData); renderTableAndPagination();
+    }
+    window.resetSearch = function() { document.getElementById("searchInput").value = ""; searchRecords(); }
+
+    /* ================== 帳號管理 ================== */
+    function renderUserTable() {
+        const tbody = document.getElementById("userTableBody"); tbody.innerHTML = "";
+        usersDatabase.forEach(user => {
+            let roleText = user.role === 1 ? "1. 最高權限" : (user.role === 2 ? "2. 第二權限" : "3. 第三權限");
+            let deleteBtn = user.username === loggedInUser.username ? `<span style="color:#95a5a6; font-size:12px;">無法刪除自己</span>` : `<button class="btn btn-sm btn-danger" onclick="deleteUser('${user.id}')">刪除</button>`;
+            tbody.innerHTML += `<tr><td><strong>${user.username}</strong></td><td><code>${user.password}</code></td><td>${roleText}</td><td><button class="btn btn-sm btn-edit" onclick="editUser('${user.id}')">編輯</button> ${deleteBtn}</td></tr>`;
+        });
+    }
+
+    function renderLogsTable() {
+        const tbody = document.getElementById("loginLogsTableBody");
+        if (!tbody) return;
+        tbody.innerHTML = "";
+        
+        const sortedLogs = logsDatabase.sort((a, b) => b.timestamp - a.timestamp).slice(0, 100);
+        
+        if (sortedLogs.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="2" class="no-data">尚無登入紀錄</td></tr>`;
+            return;
+        }
+        
+        sortedLogs.forEach(log => {
+            tbody.innerHTML += `<tr>
+                <td><strong>${log.username}</strong></td>
+                <td>${log.timeStr}</td>
+            </tr>`;
+        });
+    }
+
+    window.handleUserSubmit = async function(event) {
+        event.preventDefault();
+        const userData = { username: document.getElementById("regUsername").value.trim(), password: document.getElementById("regPassword").value.trim(), role: Number(document.getElementById("regRole").value) };
+        try {
+            if (currentUserEditingId) { await updateDoc(doc(db, "users", currentUserEditingId), userData); alert("✅ 帳號更新成功！"); } 
+            else { const q = query(usersCol, where("username", "==", userData.username)); const snapshot = await getDocs(q); if(!snapshot.empty){ alert("❌ 此帳號名稱已被使用，請換一個！"); return; } await addDoc(usersCol, userData); alert("🎉 新帳號建立成功！"); }
+            resetUserForm();
+        } catch (e) { alert("❌ 操作失敗：" + e); }
+    }
+
+    window.editUser = function(id) {
+        const user = usersDatabase.find(u => u.id === id); if(!user) return; currentUserEditingId = id;
+        document.getElementById("regUsername").value = user.username; document.getElementById("regPassword").value = user.password; document.getElementById("regRole").value = user.role;
+        document.getElementById("userSubmitBtn").innerText = "💾 更新帳號資料"; document.getElementById("userSubmitBtn").classList.add("edit-active"); document.getElementById("userCancelBtn").style.display = "block";
+    }
+
+    window.resetUserForm = function() {
+        currentUserEditingId = null; document.getElementById("regUsername").value = ""; document.getElementById("regPassword").value = ""; document.getElementById("regRole").value = "1";
+        document.getElementById("userSubmitBtn").innerText = "儲存帳號設定"; document.getElementById("userSubmitBtn").classList.remove("edit-active"); document.getElementById("userCancelBtn").style.display = "none";
+    }
+
+    window.deleteUser = async function(id) { if (confirm("⚠️ 確定要刪除此帳號嗎？")) { try { await deleteDoc(doc(db, "users", id)); } catch (e) { alert("❌ 刪除失敗：" + e); } } }
+
+    initFormDate();
+</script>
+</body>
+</html>
