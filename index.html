@@ -469,7 +469,7 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getFirestore, collection, addDoc, deleteDoc, doc, updateDoc, onSnapshot, query, where, getDocs, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-    // 使用你專屬的 Firebase 金鑰
+    // 🔴 使用你專屬的 Firebase 金鑰
     const firebaseConfig = {
         apiKey: "AIzaSyBccKaB3yjh7anO2KhK2XsPiwnoEDYAss8",
         authDomain: "tva2020.firebaseapp.com",
@@ -517,6 +517,39 @@
             await setDoc(doc(usersCol, "admin_gary"), { username: "Gary", password: "20120326", role: 1 });
         }
     }
+    
+    // 🌟 新增：檢查 LocalStorage 判斷是否需要自動登入
+    function checkLoginSession() {
+        const sessionData = localStorage.getItem("tvaAuthSession");
+        if (sessionData) {
+            const parsedSession = JSON.parse(sessionData);
+            const currentTime = new Date().getTime();
+            
+            if (currentTime < parsedSession.expire) {
+                // 尚未過期，延長 30 分鐘通行證
+                parsedSession.expire = currentTime + (30 * 60 * 1000);
+                localStorage.setItem("tvaAuthSession", JSON.stringify(parsedSession));
+                
+                // 恢復使用者身分
+                loggedInUser = { 
+                    id: parsedSession.id, 
+                    username: parsedSession.username, 
+                    role: parsedSession.role 
+                };
+                
+                document.getElementById("loginSection").classList.add("hidden");
+                document.getElementById("welcomeUserTextDashboard").innerText = `👤 登入者：${loggedInUser.username} (權限 ${loggedInUser.role})`;
+                
+                applyPermissions(); 
+                initDataListeners(); 
+                goToApp('dashboardApp'); 
+            } else {
+                // 已經超過 30 分鐘，清除舊紀錄要求重新登入
+                localStorage.removeItem("tvaAuthSession");
+            }
+        }
+    }
+
     initSystemAuth();
 
     window.goToApp = function(appId) {
@@ -531,6 +564,16 @@
         if(appId === 'mainApp') { resetFormState(); renderTableAndPagination(); }
         if(appId === 'customerApp') { resetCustomerForm(); renderCustomerTable(); }
         if(appId === 'bidApp') { resetBidForm(); renderBidTable(); }
+        
+        // 切換頁面時順便更新一下過期時間
+        if(loggedInUser) {
+            const sessionData = localStorage.getItem("tvaAuthSession");
+            if(sessionData) {
+                const parsed = JSON.parse(sessionData);
+                parsed.expire = new Date().getTime() + (30 * 60 * 1000);
+                localStorage.setItem("tvaAuthSession", JSON.stringify(parsed));
+            }
+        }
     }
 
     window.handleLogin = async function(event) {
@@ -545,15 +588,20 @@
             const userData = snapshot.docs[0].data();
             loggedInUser = { id: snapshot.docs[0].id, username: userData.username, role: Number(userData.role) };
             
+            // 🌟 登入成功，發放 30 分鐘免登入通行證
+            const expireTime = new Date().getTime() + (30 * 60 * 1000); 
+            localStorage.setItem("tvaAuthSession", JSON.stringify({
+                id: loggedInUser.id,
+                username: loggedInUser.username,
+                role: loggedInUser.role,
+                expire: expireTime
+            }));
+            
+            // 寫入歷史登入紀錄
             const now = new Date();
             const pad = (n) => n.toString().padStart(2, '0');
             const timeStr = `${now.getFullYear()}/${pad(now.getMonth()+1)}/${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}`;
-            
-            addDoc(logsCol, {
-                username: userData.username,
-                timestamp: now.getTime(),
-                timeStr: timeStr
-            }).catch(e => console.error("歷史登入紀錄寫入失敗:", e));
+            addDoc(logsCol, { username: userData.username, timestamp: now.getTime(), timeStr: timeStr }).catch(e => console.error(e));
 
             document.getElementById("loginSection").classList.add("hidden");
             document.getElementById("welcomeUserTextDashboard").innerText = `👤 登入者：${loggedInUser.username} (權限 ${loggedInUser.role})`;
@@ -569,6 +617,9 @@
 
     window.handleLogout = function() {
         loggedInUser = null;
+        // 🌟 登出時，把通行證撕毀
+        localStorage.removeItem("tvaAuthSession");
+        
         document.getElementById("dashboardApp").classList.add("hidden");
         document.getElementById("mainApp").classList.add("hidden");
         document.getElementById("customerApp").classList.add("hidden");
@@ -1124,7 +1175,10 @@
 
     window.deleteUser = async function(id) { if (confirm("⚠️ 確定要刪除此帳號嗎？")) { try { await deleteDoc(doc(db, "users", id)); } catch (e) { alert("❌ 刪除失敗：" + e); } } }
 
+    // 🌟 在腳本最後呼叫檢查功能
+    checkLoginSession();
     initFormDate();
+
 </script>
 </body>
 </html>
