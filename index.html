@@ -32,12 +32,12 @@
         .login-box input:focus { border-color: #3498db; outline: none; box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2); }
         
         /* 系統主選單 (Dashboard) */
-        .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-top: 30px; }
+        .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-top: 30px; }
         .dashboard-card { background: #f8fafc; border: 1px solid #cbd5e1; padding: 40px 20px; text-align: center; border-radius: 8px; cursor: pointer; transition: all 0.3s; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
         .dashboard-card:hover { transform: translateY(-5px); box-shadow: 0 10px 15px rgba(0,0,0,0.1); border-color: #3498db; }
-        .dashboard-card h3 { color: #2c3e50; font-size: 24px; margin: 0 0 10px 0; }
-        .dashboard-card p { color: #64748b; margin: 0; }
-        .dashboard-icon { font-size: 48px; margin-bottom: 15px; }
+        .dashboard-card h3 { color: #2c3e50; font-size: 20px; margin: 0 0 10px 0; }
+        .dashboard-card p { color: #64748b; margin: 0; font-size: 14px; }
+        .dashboard-icon { font-size: 40px; margin-bottom: 15px; }
 
         /* 表單區塊 */
         .form-section { background-color: #f9fbfd; border: 1px solid #e2e8f0; padding: 20px; border-radius: 6px; margin-bottom: 30px; transition: all 0.3s ease; }
@@ -105,7 +105,6 @@
         .modal-header h3 { margin: 0; color: #2c3e50; }
         .close-modal { background: none; border: none; font-size: 24px; cursor: pointer; color: #7f8c8d; }
         
-        /* 升級為可點擊標籤 */
         .instrument-badge { 
             display: inline-block; background: #3498db; color: white; padding: 8px 14px; 
             border-radius: 16px; margin: 5px; font-family: monospace; font-size: 15px; 
@@ -157,6 +156,12 @@
             <div class="dashboard-icon">📁</div>
             <h3>標案管理</h3>
             <p>管理歷史標案與得標資訊</p>
+        </div>
+        <!-- 🌟 新增：維修項目統計 (僅最高權限顯示) -->
+        <div class="dashboard-card hidden" id="dashboardAnalysisBtn" onclick="goToApp('analysisApp')">
+            <div class="dashboard-icon">📊</div>
+            <h3>維修項目統計</h3>
+            <p>快速查詢特定維修項目的歷史紀錄</p>
         </div>
         <div class="dashboard-card hidden" id="dashboardUserBtn" onclick="goToApp('userManagementApp')">
             <div class="dashboard-icon">⚙️</div>
@@ -414,8 +419,53 @@
     <div id="bidPagination" class="pagination"></div>
 </div>
 
+<!-- ================= 🌟 模組 5：維修項目統計 (僅權限1可見) ================= -->
+<div class="container hidden" id="analysisApp">
+    <div class="header-section">
+        <h1 onclick="goToApp('dashboardApp')" title="點擊回到主選單">📊 維修項目統計與查詢</h1>
+        <div class="user-controls">
+            <button class="btn btn-nav" onclick="goToApp('dashboardApp')">🏠 回主選單</button>
+        </div>
+    </div>
+    
+    <div class="form-section">
+        <h2 class="form-title">🔍 快速過濾特定維修項目</h2>
+        <div class="form-grid">
+            <div class="form-group">
+                <label>請選擇維修/校正項目</label>
+                <select id="analysisTaskSelect" onchange="filterAnalysisByTask()">
+                    <option value="" disabled selected>-- 請選擇要查詢的項目 --</option>
+                    <option value="校正">1. 校正</option>
+                    <option value="吸到水">2. 吸到水</option>
+                    <option value="更換電池">3. 更換電池</option>
+                    <option value="更換泵浦總成">4. 更換泵浦總成</option>
+                    <option value="更換點火器">5. 更換點火器</option>
+                    <option value="韌體更新">6. 韌體更新</option>
+                    <option value="新機出貨">7. 新機出貨</option>
+                    <option value="召回，無異常">8. 召回，無異常</option>
+                </select>
+            </div>
+        </div>
+    </div>
 
-<!-- ================= 模組 5：帳號管理與歷史紀錄 ================= -->
+    <table>
+        <thead>
+            <tr>
+                <th>日期</th>
+                <th>客戶名稱</th>
+                <th>儀器序號</th>
+                <th>維修項目</th>
+                <th>工程師</th>
+                <th>狀態</th>
+            </tr>
+        </thead>
+        <tbody id="analysisTableBody">
+            <tr><td colspan="6" class="no-data">請先於上方選擇維修項目進行查詢</td></tr>
+        </tbody>
+    </table>
+</div>
+
+<!-- ================= 模組 6：帳號管理與歷史紀錄 ================= -->
 <div class="container hidden" id="userManagementApp">
     <div class="header-section">
         <h2>⚙️ 系統帳號權限管理</h2>
@@ -448,7 +498,6 @@
         <tbody id="userTableBody"></tbody>
     </table>
 
-    <!-- 歷史登入紀錄區塊 -->
     <hr style="margin: 40px 0; border: 1px solid #e2e8f0;">
     <h3 class="form-title" style="border-left-color: #8e44ad;">📜 歷史登入紀錄 (最近 100 筆)</h3>
     <table>
@@ -518,7 +567,6 @@
         }
     }
     
-    // 🌟 新增：檢查 LocalStorage 判斷是否需要自動登入
     function checkLoginSession() {
         const sessionData = localStorage.getItem("tvaAuthSession");
         if (sessionData) {
@@ -526,11 +574,9 @@
             const currentTime = new Date().getTime();
             
             if (currentTime < parsedSession.expire) {
-                // 尚未過期，延長 30 分鐘通行證
                 parsedSession.expire = currentTime + (30 * 60 * 1000);
                 localStorage.setItem("tvaAuthSession", JSON.stringify(parsedSession));
                 
-                // 恢復使用者身分
                 loggedInUser = { 
                     id: parsedSession.id, 
                     username: parsedSession.username, 
@@ -544,7 +590,6 @@
                 initDataListeners(); 
                 goToApp('dashboardApp'); 
             } else {
-                // 已經超過 30 分鐘，清除舊紀錄要求重新登入
                 localStorage.removeItem("tvaAuthSession");
             }
         }
@@ -557,6 +602,7 @@
         document.getElementById("mainApp").classList.add("hidden");
         document.getElementById("customerApp").classList.add("hidden");
         document.getElementById("bidApp").classList.add("hidden");
+        document.getElementById("analysisApp").classList.add("hidden");
         document.getElementById("userManagementApp").classList.add("hidden");
         
         document.getElementById(appId).classList.remove("hidden");
@@ -564,8 +610,8 @@
         if(appId === 'mainApp') { resetFormState(); renderTableAndPagination(); }
         if(appId === 'customerApp') { resetCustomerForm(); renderCustomerTable(); }
         if(appId === 'bidApp') { resetBidForm(); renderBidTable(); }
+        if(appId === 'analysisApp') { document.getElementById("analysisTaskSelect").value = ""; document.getElementById("analysisTableBody").innerHTML = `<tr><td colspan="6" class="no-data">請先於上方選擇維修項目進行查詢</td></tr>`; }
         
-        // 切換頁面時順便更新一下過期時間
         if(loggedInUser) {
             const sessionData = localStorage.getItem("tvaAuthSession");
             if(sessionData) {
@@ -588,7 +634,6 @@
             const userData = snapshot.docs[0].data();
             loggedInUser = { id: snapshot.docs[0].id, username: userData.username, role: Number(userData.role) };
             
-            // 🌟 登入成功，發放 30 分鐘免登入通行證
             const expireTime = new Date().getTime() + (30 * 60 * 1000); 
             localStorage.setItem("tvaAuthSession", JSON.stringify({
                 id: loggedInUser.id,
@@ -597,7 +642,6 @@
                 expire: expireTime
             }));
             
-            // 寫入歷史登入紀錄
             const now = new Date();
             const pad = (n) => n.toString().padStart(2, '0');
             const timeStr = `${now.getFullYear()}/${pad(now.getMonth()+1)}/${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}`;
@@ -617,13 +661,13 @@
 
     window.handleLogout = function() {
         loggedInUser = null;
-        // 🌟 登出時，把通行證撕毀
         localStorage.removeItem("tvaAuthSession");
         
         document.getElementById("dashboardApp").classList.add("hidden");
         document.getElementById("mainApp").classList.add("hidden");
         document.getElementById("customerApp").classList.add("hidden");
         document.getElementById("bidApp").classList.add("hidden");
+        document.getElementById("analysisApp").classList.add("hidden");
         document.getElementById("userManagementApp").classList.add("hidden");
         document.getElementById("loginSection").classList.remove("hidden");
         document.getElementById("loginUsername").value = "";
@@ -631,8 +675,14 @@
     }
 
     function applyPermissions() {
-        if (loggedInUser.role === 1) document.getElementById("dashboardUserBtn").classList.remove("hidden");
-        else document.getElementById("dashboardUserBtn").classList.add("hidden");
+        // 🌟 權限 1 專屬模組：帳號管理 + 維修項目統計
+        if (loggedInUser.role === 1) {
+            document.getElementById("dashboardUserBtn").classList.remove("hidden");
+            document.getElementById("dashboardAnalysisBtn").classList.remove("hidden");
+        } else {
+            document.getElementById("dashboardUserBtn").classList.add("hidden");
+            document.getElementById("dashboardAnalysisBtn").classList.add("hidden");
+        }
 
         if (loggedInUser.role === 3) {
             document.getElementById("formSection").classList.add("hidden");
@@ -664,6 +714,10 @@
             database = [];
             snapshot.forEach((doc) => { database.push({ id: doc.id, ...doc.data() }); });
             searchRecords(); updateStats(); updateDatalists(); 
+            // 如果停留在一覽表，同步更新
+            if(document.getElementById("analysisApp").classList.contains("hidden") === false) {
+                filterAnalysisByTask();
+            }
         });
 
         onSnapshot(customersCol, (snapshot) => {
@@ -691,6 +745,36 @@
                 renderLogsTable();
             });
         }
+    }
+    
+    // 🌟 新增：維修項目統計邏輯
+    window.filterAnalysisByTask = function() {
+        const selectedTask = document.getElementById("analysisTaskSelect").value;
+        const tbody = document.getElementById("analysisTableBody");
+        tbody.innerHTML = "";
+        
+        if (!selectedTask) return;
+        
+        // 過濾出包含該字眼的維修紀錄，並依照日期由新到舊排序
+        const matchedRecords = database.filter(r => r.task && r.task.includes(selectedTask))
+                                       .sort((a, b) => (a.date < b.date) ? 1 : -1);
+                                       
+        if (matchedRecords.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="6" class="no-data">目前沒有「${selectedTask}」的相關維修紀錄</td></tr>`;
+            return;
+        }
+        
+        matchedRecords.forEach(record => {
+            const statusClass = record.status.includes("完成") ? "status-done" : "status-wait";
+            tbody.innerHTML += `<tr>
+                <td><strong>${record.date}</strong></td>
+                <td><strong>${record.customer}</strong></td>
+                <td><code>${record.serial}</code></td>
+                <td style="color:#2c3e50; font-weight:bold;">${record.task}</td>
+                <td>${record.engineer}</td>
+                <td><span class="status-badge ${statusClass}">${record.status}</span></td>
+            </tr>`;
+        });
     }
 
     /* ================== 客戶管理 ================== */
@@ -786,7 +870,6 @@
         document.getElementById("searchInput").value = serial;
         searchRecords();
     }
-
 
     /* ================== 標案管理 ================== */
     window.handleBidSort = function(column) {
@@ -1175,7 +1258,6 @@
 
     window.deleteUser = async function(id) { if (confirm("⚠️ 確定要刪除此帳號嗎？")) { try { await deleteDoc(doc(db, "users", id)); } catch (e) { alert("❌ 刪除失敗：" + e); } } }
 
-    // 🌟 在腳本最後呼叫檢查功能
     checkLoginSession();
     initFormDate();
 
